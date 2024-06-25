@@ -3,16 +3,18 @@ class AthleticNet {
     throw new Error('The AthleticNet class should not be constructed')
   }
 
-  static _search(query) {
-    const json = fetchJson(
+  static async _search(query: string) {
+    const response = await fetch(
       `https://www.athletic.net/api/v1/AutoComplete/search?q=${encodeURIComponent(
         query
       )}`
     )
+    const json = await response.json()
     return json.response.docs.filter((result) => result.type === 'Athlete')
   }
-  static search(query) {
+  static async search(query: string) {
     const subtextRegex = /^(.+) \((.+)\)\|\|(.+), ([A-Z]+)/
+    const searchResults = await AthleticNet._search(query)
     return AthleticNet._search(query).map((result) => {
       const [match, school, schoolType, city, state] =
         result.subtext.match(subtextRegex) || []
@@ -26,7 +28,7 @@ class AthleticNet {
       }
     })
   }
-  static findAthlete(query) {
+  static findAthlete(query: string) {
     const searchResults = AthleticNet.search(query)
     const topResult = searchResults[0]
     const athlete = new AthleticNetAthlete(topResult.id)
@@ -36,13 +38,20 @@ class AthleticNet {
 }
 
 class AthleticNetAthlete {
-  constructor(id) {
-    this.id = id
-    this.service = 'Athletic.net'
-    this.loaded = false
+  service = 'Athletic.net'
+  loaded = false
+  times = []
 
-    this.times = []
-  }
+  _info = unknown
+  _xcMeets = unknown
+  _xcEvents = unknown
+  _xcTimes = unknown
+  _tfMeets = unknown
+  _tfEvents = unknown
+  _tfTimes = unknown
+  times = []
+
+  constructor(public id: string) {}
 
   load() {
     const xcJson = fetchJson(
@@ -96,7 +105,10 @@ class AthleticNetAthlete {
   }
 }
 
-const athleticNetPrettyMatchers = [
+const athleticNetPrettyMatchers: [
+  matcher: string | RegExp,
+  replacer: string | ((match: string) => string)
+][] = [
   [/^(\d+) Meter(?:s| Dash| Fly)$/i, (s) => `${s} meter`],
   [/^(\d+(?:\.\d+)?) Miles?$/i, (s) => `${s} mile`],
   [/^(\d+x\d+)(?:Throwers)? Relay$/i, (s) => `${s} meter relay`],
@@ -125,7 +137,10 @@ const athleticNetPrettyMatchers = [
   [/^[SDM]MR (\d+)y$/i, (s) => `${s} yard medley relay`],
   [/^[SDM]MR (\d+(?:\.\d+)?) Mile$/i, (s) => `${s} mile medley relay`],
 ]
-const athleticNetMetersMatchers = [
+const athleticNetMetersMatchers: [
+  matcher: RegExp,
+  parser: ((match: string) => number)
+][] = [
   [
     /^(\d+(?:,000)?)(?: Meter(?:s| Dash| Fly)|m (?:Hurdles|Racewalk))$/i,
     (s) => parseInt(s),
@@ -138,12 +153,17 @@ const athleticNetMetersMatchers = [
 ]
 
 class AthleticNetTime {
-  constructor(data, type, meets, events) {
+  _data: unknown
+  _type: unknown
+  _meets: unknown
+  _events: unknown
+  service = 'Athletic.net'
+  
+  constructor(data: unknown, type: unknown, meets: unknown, events: unknown) {
     this._data = data
     this._type = type
     this._meets = meets
     this._events = events
-    this.service = 'Athletic.net'
   }
   load() {}
 

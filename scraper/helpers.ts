@@ -1,34 +1,17 @@
-function clearData(sheet) {
-  const headerRows = sheet.getFrozenRows()
-  const headerColumns = sheet.getFrozenColumns()
-  const lastRow = sheet.getLastRow()
-  const lastColumn = sheet.getLastColumn()
-
-  if (lastRow > headerRows) {
-    sheet
-      .getRange(
-        headerRows + 1,
-        headerColumns + 1,
-        lastRow - headerRows,
-        lastColumn - headerColumns
-      )
-      .clearContent()
-  }
-}
-
 const jsonCache = new Map()
-function fetchJson(url) {
+export async function fetchJson(url: string) {
   const cached = jsonCache.get(url)
   if (cached) return JSON.parse(cached)
 
-  const response = UrlFetchApp.fetch(url).getContentText()
-  jsonCache.set(url, response)
+  const response = await fetch(url)
+  const responseText = await response.text()
+  jsonCache.set(url, responseText)
 
-  const json = JSON.parse(response)
+  const json = JSON.parse(responseText)
   return json
 }
 
-function parseTime(timeString) {
+export function parseTime(timeString: string) {
   const parts = timeString.split(':')
   if (parts.length > 2 || timeString.includes('-')) {
     console.error(`Don't know how to parse this time: ${timeString}`)
@@ -43,7 +26,12 @@ function parseTime(timeString) {
   return time
 }
 
-function evaluateMatchers(input, matchers, defaultValue) {
+export type matcher<Result> = [
+  matcher: string | RegExp,
+  replacer: Result | ((match?: string) => Result)
+]
+
+export function evaluateMatchers<T extends string | number>(input: string, matchers: matcher<T>[], defaultValue: T): T {
   for (const [matcher, format] of matchers) {
     let match = false
     let matchValue = undefined
@@ -67,9 +55,9 @@ function evaluateMatchers(input, matchers, defaultValue) {
   return defaultValue
 }
 
-function approxSame(a, b) {
+export function approxSame(a: unknown, b: unknown) {
   if (typeof a !== typeof b) return false
-  if (typeof a === 'string') {
+  if (typeof a === 'string' && typeof b === 'string') {
     const result = a.localeCompare(b, 'en-US', {
       usage: 'search',
       sensitivity: 'base',
@@ -77,19 +65,24 @@ function approxSame(a, b) {
     })
     return result === 0
   }
-  if (typeof a === 'number') {
+  if (typeof a === 'number' && typeof b === 'number') {
     return Math.abs(a - b) < 1e-5
   }
   return a === b
 }
 
-function pickVersion(
-  versions,
+export function pickVersion<T extends unknown>(
+  versions: T[],
   {
-    filter = (v) => v,
+    filter = (v: T) => !!v,
     forceFilter = false,
     defaultValue = undefined,
     comparision = approxSame,
+  }: {
+    filter?: ((v: T) => boolean) | string | RegExp
+    forceFilter?: boolean
+    defaultValue?: T
+    comparision?: (a: T, b: T) => boolean
   } = {}
 ) {
   if (versions.length === 0) return defaultValue
@@ -118,13 +111,13 @@ function pickVersion(
   }
 
   // Count how many of each version there are
-  const counts = new Map()
+  const counts: Map<T, number> = new Map()
   filteredVersions.forEach((version) => {
     const matchingCountedVersion = [...counts.keys()].find((countedVersion) =>
       comparision(countedVersion, version)
     )
     if (matchingCountedVersion) {
-      const existingCount = counts.get(matchingCountedVersion)
+      const existingCount = counts.get(matchingCountedVersion)!
       counts.set(matchingCountedVersion, existingCount + 1)
     } else {
       counts.set(version, 1)
@@ -132,8 +125,8 @@ function pickVersion(
   })
 
   const sortedVersions = filteredVersions.sort((a, b) => {
-    const countA = counts.get(a)
-    const countB = counts.get(b)
+    const countA = counts.get(a) ?? 0
+    const countB = counts.get(b) ?? 0
     if (countA !== countB) {
       return countB - countA // 1st, prioritize more common versions
     } else {

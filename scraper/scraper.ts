@@ -1,4 +1,4 @@
-class Scraper {
+export class Scraper {
   constructor() {
     throw new Error('The Scraper class should not be constructed')
   }
@@ -21,7 +21,7 @@ class Scraper {
   }
 }
 
-class Athlete {
+export class Athlete {
   constructor(ids) {
     this.mileSplit = new MileSplitAthlete(ids.mileSplit)
     this.atheticNet = new AthleticNetAthlete(ids.athleticNet)
@@ -94,7 +94,7 @@ class Athlete {
   }
 }
 
-class Time {
+export class Time {
   constructor(sources) {
     this.sources = sources
     this.loaded = true
