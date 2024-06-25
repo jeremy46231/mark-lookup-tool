@@ -1,3 +1,6 @@
+import { Temporal } from 'temporal-polyfill'
+import { Matcher, evaluateMatchers, parseTime, type TODO } from './helpers'
+
 class AthleticNet {
   constructor() {
     throw new Error('The AthleticNet class should not be constructed')
@@ -10,12 +13,14 @@ class AthleticNet {
       )}`
     )
     const json = await response.json()
-    return json.response.docs.filter((result) => result.type === 'Athlete')
+    return json.response.docs.filter(
+      (result) => result.type === 'Athlete'
+    ) as TODO[]
   }
   static async search(query: string) {
     const subtextRegex = /^(.+) \((.+)\)\|\|(.+), ([A-Z]+)/
-    const searchResults = await AthleticNet._search(query)
-    return AthleticNet._search(query).map((result) => {
+    const rawResults = await AthleticNet._search(query)
+    return rawResults.map((result) => {
       const [match, school, schoolType, city, state] =
         result.subtext.match(subtextRegex) || []
       return {
@@ -28,8 +33,8 @@ class AthleticNet {
       }
     })
   }
-  static findAthlete(query: string) {
-    const searchResults = AthleticNet.search(query)
+  static async findAthlete(query: string) {
+    const searchResults = await AthleticNet.search(query)
     const topResult = searchResults[0]
     const athlete = new AthleticNetAthlete(topResult.id)
     athlete.load()
@@ -40,31 +45,32 @@ class AthleticNet {
 class AthleticNetAthlete {
   service = 'Athletic.net'
   loaded = false
-  times = []
+  times: AthleticNetTime[] = []
 
-  _info = unknown
-  _xcMeets = unknown
-  _xcEvents = unknown
-  _xcTimes = unknown
-  _tfMeets = unknown
-  _tfEvents = unknown
-  _tfTimes = unknown
-  times = []
+  _info: TODO
+  _xcMeets: TODO
+  _xcEvents: TODO
+  _xcTimes: TODO
+  _tfMeets: TODO
+  _tfEvents: TODO
+  _tfTimes: TODO
 
   constructor(public id: string) {}
 
-  load() {
-    const xcJson = fetchJson(
+  async load() {
+    const xcResponse = await fetch(
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=xc&level=`
     )
+    const xcJson = await xcResponse.json()
     this._info = xcJson.athlete
     this._xcMeets = xcJson.meets
     this._xcEvents = xcJson.distancesXC
     this._xcTimes = xcJson.resultsXC
 
-    const tfJson = fetchJson(
+    const tfResponse = await fetch(
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=tf&level=`
     )
+    const tfJson = await tfResponse.json()
     this._tfMeets = tfJson.meets
     this._tfEvents = tfJson.eventsTF
     this._tfTimes = tfJson.resultsTF
@@ -105,10 +111,7 @@ class AthleticNetAthlete {
   }
 }
 
-const athleticNetPrettyMatchers: [
-  matcher: string | RegExp,
-  replacer: string | ((match: string) => string)
-][] = [
+const athleticNetPrettyMatchers: Matcher<string>[] = [
   [/^(\d+) Meter(?:s| Dash| Fly)$/i, (s) => `${s} meter`],
   [/^(\d+(?:\.\d+)?) Miles?$/i, (s) => `${s} mile`],
   [/^(\d+x\d+)(?:Throwers)? Relay$/i, (s) => `${s} meter relay`],
@@ -137,29 +140,28 @@ const athleticNetPrettyMatchers: [
   [/^[SDM]MR (\d+)y$/i, (s) => `${s} yard medley relay`],
   [/^[SDM]MR (\d+(?:\.\d+)?) Mile$/i, (s) => `${s} mile medley relay`],
 ]
-const athleticNetMetersMatchers: [
-  matcher: RegExp,
-  parser: ((match: string) => number)
-][] = [
+const athleticNetMetersMatchers: Matcher<number>[] = [
   [
     /^(\d+(?:,000)?)(?: Meter(?:s| Dash| Fly)|m (?:Hurdles|Racewalk))$/i,
-    (s) => parseInt(s),
+    (s) => parseInt(s ?? 'NaN'),
   ],
   [
     /^(\d+(?:\.\d+)?) Mile(?:|s| Steeplechase| Racewalk)$/i,
-    (s) => parseFloat(s) * 1609.344,
+    (s) => parseFloat(s ?? 'NaN') * 1609.344,
   ],
-  [/^(\d+(?:\.\d+))k Steeplechase$/i, (s) => parseFloat(s) * 1000],
+  [/^(\d+(?:\.\d+))k Steeplechase$/i, (s) => parseFloat(s ?? 'NaN') * 1000],
 ]
 
 class AthleticNetTime {
-  _data: unknown
-  _type: unknown
-  _meets: unknown
-  _events: unknown
   service = 'Athletic.net'
-  
-  constructor(data: unknown, type: unknown, meets: unknown, events: unknown) {
+  loaded = true
+
+  _data: TODO
+  _type: TODO
+  _meets: TODO
+  _events: TODO
+
+  constructor(data: TODO, type: TODO, meets: TODO, events: TODO) {
     this._data = data
     this._type = type
     this._meets = meets

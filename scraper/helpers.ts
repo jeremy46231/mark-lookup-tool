@@ -1,15 +1,4 @@
-const jsonCache = new Map()
-export async function fetchJson(url: string) {
-  const cached = jsonCache.get(url)
-  if (cached) return JSON.parse(cached)
-
-  const response = await fetch(url)
-  const responseText = await response.text()
-  jsonCache.set(url, responseText)
-
-  const json = JSON.parse(responseText)
-  return json
-}
+export type TODO = any
 
 export function parseTime(timeString: string) {
   const parts = timeString.split(':')
@@ -26,12 +15,16 @@ export function parseTime(timeString: string) {
   return time
 }
 
-export type matcher<Result> = [
+export type Matcher<Result> = [
   matcher: string | RegExp,
   replacer: Result | ((match?: string) => Result)
 ]
 
-export function evaluateMatchers<T extends string | number>(input: string, matchers: matcher<T>[], defaultValue: T): T {
+export function evaluateMatchers<T extends unknown>(
+  input: string,
+  matchers: Matcher<Exclude<unknown, Function>>[],
+  defaultValue: Exclude<unknown, Function>
+): Exclude<unknown, Function> {
   for (const [matcher, format] of matchers) {
     let match = false
     let matchValue = undefined
