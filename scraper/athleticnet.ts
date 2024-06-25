@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill'
 import { Matcher, evaluateMatchers, parseTime, type TODO } from './helpers'
 
-class AthleticNet {
+export class AthleticNet {
   constructor() {
     throw new Error('The AthleticNet class should not be constructed')
   }
@@ -42,7 +42,7 @@ class AthleticNet {
   }
 }
 
-class AthleticNetAthlete {
+export class AthleticNetAthlete {
   service = 'Athletic.net'
   loaded = false
   times: AthleticNetTime[] = []
@@ -152,7 +152,7 @@ const athleticNetMetersMatchers: Matcher<number>[] = [
   [/^(\d+(?:\.\d+))k Steeplechase$/i, (s) => parseFloat(s ?? 'NaN') * 1000],
 ]
 
-class AthleticNetTime {
+export class AthleticNetTime {
   service = 'Athletic.net'
   loaded = true
 

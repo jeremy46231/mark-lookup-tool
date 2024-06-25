@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill'
 import { Matcher, evaluateMatchers, parseTime, type TODO } from './helpers'
 
-class MileSplit {
+export class MileSplit {
   constructor() {
     throw new Error('The MileSplit class should not be constructed')
   }
@@ -35,7 +35,7 @@ class MileSplit {
   }
 }
 
-class MileSplitAthlete {
+export class MileSplitAthlete {
   service = 'MileSplit'
   loaded = false
   times: MileSplitTime[] = []
@@ -105,7 +105,7 @@ const mileSplitMetersMatchers: Matcher<number>[] = [
   [/(\d+(?:\.\d+)?)mile/i, (s) => parseFloat(s ?? 'NaN') * 1609.344],
 ]
 
-class MileSplitTime {
+export class MileSplitTime {
   service = 'MileSplit'
   loaded = false
 

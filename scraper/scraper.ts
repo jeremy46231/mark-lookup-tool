@@ -1,16 +1,21 @@
+import { Temporal } from 'temporal-polyfill'
+import { AthleticNet, AthleticNetAthlete } from './athleticnet'
+import { MileSplit, MileSplitAthlete } from './milesplit'
+import { pickVersion } from './helpers'
+
 export class Scraper {
   constructor() {
     throw new Error('The Scraper class should not be constructed')
   }
 
-  static search(query) {
+  static async search(query: string) {
     return {
-      mileSplit: MileSplit.search(query),
-      athleticNet: AthleticNet.search(query),
+      mileSplit: await MileSplit.search(query),
+      athleticNet: await AthleticNet.search(query),
     }
   }
-  static findAthlete(query) {
-    const results = Scraper.search(query)
+  static async findAthlete(query: string) {
+    const results = await Scraper.search(query)
     const topIds = {
       mileSplit: results.mileSplit[0]?.id,
       athleticNet: results.athleticNet[0]?.id,
@@ -22,21 +27,21 @@ export class Scraper {
 }
 
 export class Athlete {
-  constructor(ids) {
+  mileSplit: MileSplitAthlete
+  atheticNet: AthleticNetAthlete
+  loaded = false
+  times: Time[] = []
+
+  constructor(ids: { mileSplit: string; athleticNet: string }) {
     this.mileSplit = new MileSplitAthlete(ids.mileSplit)
     this.atheticNet = new AthleticNetAthlete(ids.athleticNet)
-    this.loaded = false
-
-    this.times = []
   }
 
-  load() {
-    this.mileSplit.load()
-    this.atheticNet.load()
+  async load() {
+    await Promise.all([this.mileSplit.load(), this.atheticNet.load()])
 
     const timeSources = [...this.mileSplit.times, ...this.atheticNet.times]
-    timeSources.map((source) => source.load())
-    // this.times = timeSources.map(source => new Time([source]))
+    await Promise.all(timeSources.map((source) => source.load()))
 
     const matchingSources = new Map()
 
