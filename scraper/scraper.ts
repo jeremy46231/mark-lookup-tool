@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill'
 import { AthleticNet, AthleticNetAthlete } from './athleticnet'
 import { MileSplit, MileSplitAthlete } from './milesplit'
-import { pickVersion } from './helpers'
+import { TODO, parseTime, pickVersion } from './helpers'
 
 export class Scraper {
   constructor() {
@@ -100,11 +100,9 @@ export class Athlete {
 }
 
 export class Time {
-  constructor(sources) {
-    this.sources = sources
-    this.loaded = true
+  constructor(public sources: TODO[]) {
+    
   }
-  load() {}
 
   get timeString() {
     return pickVersion(
