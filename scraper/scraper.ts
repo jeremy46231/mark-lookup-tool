@@ -1,107 +1,123 @@
 import { Temporal } from 'temporal-polyfill'
-import { AthleticNet, AthleticNetAthlete } from './athleticnet'
-import { MileSplit, MileSplitAthlete } from './milesplit'
-import { TODO, parseTime, pickVersion } from './helpers'
+import { parseTime, pickVersion } from './helpers'
+import { AthleticNet } from './athleticnet'
+import { MileSplit } from './milesplit'
+import { Service, ServiceAthlete, ServiceTime } from './service'
+
+const services: (new () => Service)[] = [MileSplit, AthleticNet]
 
 export class Scraper {
-  athleticNet = new AthleticNet()
-  mileSplit = new MileSplit()
+  constructor(
+    public sources: Service[] = services.map((Service) => new Service())
+  ) {}
 
-  async search(query: string) {
-    return {
-      mileSplit: await this.mileSplit.search(query),
-      athleticNet: await this.athleticNet.search(query),
-    }
-  }
+  // async search(query: string) {
+  //   return await Promise.all(this.sources.map((source) => source.search(query)))
+  // }
   async findAthlete(query: string) {
-    const results = await this.search(query)
-    const topIds = {
-      mileSplit: results.mileSplit[0]?.id,
-      athleticNet: results.athleticNet[0]?.id,
-    }
-    const athlete = new Athlete(topIds)
-    athlete.load()
+    const results = await Promise.all(
+      this.sources.map((source) => source.findAthlete(query))
+    )
+    const athlete = new Athlete(results)
     return athlete
   }
 }
 
 export class Athlete {
-  mileSplit: MileSplitAthlete
-  atheticNet: AthleticNetAthlete
   loaded = false
   times: Time[] = []
 
-  constructor(ids: { mileSplit: string; athleticNet: string }) {
-    this.mileSplit = new MileSplitAthlete(ids.mileSplit)
-    this.atheticNet = new AthleticNetAthlete(ids.athleticNet)
-  }
+  constructor(public sources: ServiceAthlete[]) {}
 
   async load() {
-    await Promise.all([this.mileSplit.load(), this.atheticNet.load()])
+    await Promise.all(this.sources.map((source) => source.load()))
 
-    const timeSources = [...this.mileSplit.times, ...this.atheticNet.times]
+    const timeSources = this.sources.flatMap((source) => source.times)
     await Promise.all(timeSources.map((source) => source.load()))
 
-    const matchingSources = new Map()
+    const matchingTimeSources = new Map<string, ServiceTime[]>()
 
     for (const source of timeSources) {
-      const key = `${source.date.toString()}|${source.event}|${
-        source.timeSeconds
-      }`
-      if (matchingSources.has(key)) {
-        matchingSources.get(key).push(source)
+      const key = JSON.stringify({
+        date: source.date?.toString(),
+        event: source.event,
+        meters: source.meters,
+      })
+      const existingSources = matchingTimeSources.get(key)
+      if (existingSources) {
+        existingSources.push(source)
       } else {
-        matchingSources.set(key, [source])
+        matchingTimeSources.set(key, [source])
       }
     }
 
-    this.times = [...matchingSources.values()].map(
+    this.times = [...matchingTimeSources.values()].map(
       (sources) => new Time(sources)
     )
 
     this.times.sort(
       (a, b) =>
-        Temporal.PlainDate.compare(a.date, b.date) ||
-        a.meters - b.meters ||
-        a.event.localeCompare(b.event, 'en-US-u-kn')
+        // Sort by date, earliest first
+        (a.date instanceof Temporal.PlainDate &&
+        b.date instanceof Temporal.PlainDate
+          ? Temporal.PlainDate.compare(a.date, b.date)
+          : 0) ||
+        // If the dates are the same, sort by meters, shortest first
+        (typeof a.meters === 'number' && typeof b.meters === 'number'
+          ? a.meters - b.meters
+          : 0) ||
+        // If the meters are the same, sort by event, alphabetically
+        (typeof a.event === 'string' && typeof b.event === 'string'
+          ? a.event.localeCompare(b.event, 'en-US-u-kn')
+          : 0)
     )
 
     this.loaded = true
   }
 
   get firstName() {
-    return pickVersion([this.mileSplit.firstName, this.atheticNet.firstName], {
-      filter: 'string',
-    })
+    return pickVersion(
+      this.sources.map((source) => source.firstName),
+      {
+        filter: 'string',
+      }
+    )
   }
   get lastName() {
-    return pickVersion([this.mileSplit.lastName, this.atheticNet.lastName], {
-      filter: 'string',
-    })
+    return pickVersion(
+      this.sources.map((source) => source.lastName),
+      {
+        filter: 'string',
+      }
+    )
   }
   get fullName() {
     return [this.firstName, this.lastName].filter((s) => s).join(' ') || null
   }
   get gender() {
-    return pickVersion([this.mileSplit.gender, this.atheticNet.gender], {
-      filter: /M|F/,
-    })
+    return pickVersion(
+      this.sources.map((source) => source),
+      {
+        filter: /M|F/,
+      }
+    )
   }
 
   get urls() {
-    return [...this.atheticNet.urls, ...this.mileSplit.urls]
+    return this.sources.flatMap((source) => source.urls)
   }
   get pfpUrl() {
-    return pickVersion([this.mileSplit.pfpUrl, this.atheticNet.pfpUrl], {
-      filter: 'string',
-    })
+    return pickVersion(
+      this.sources.map((source) => source.pfpUrl),
+      {
+        filter: 'string',
+      }
+    )
   }
 }
 
 export class Time {
-  constructor(public sources: TODO[]) {
-    
-  }
+  constructor(public sources: ServiceTime[]) {}
 
   get timeString() {
     return pickVersion(
@@ -110,6 +126,7 @@ export class Time {
     )
   }
   get timeSeconds() {
+    if (!this.timeString) return null
     return parseTime(this.timeString)
   }
 
@@ -119,7 +136,8 @@ export class Time {
   get date() {
     return pickVersion(
       this.sources.map((source) => source.date, {
-        comparison: (a, b) => a.equals(b),
+        comparison: (a: Temporal.PlainDate, b: Temporal.PlainDate) =>
+          a.equals(b),
       })
     )
   }

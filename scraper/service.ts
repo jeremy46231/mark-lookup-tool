@@ -23,7 +23,7 @@ export abstract class ServiceAthlete {
 
  constructor(public id: string) {}
 
-  abstract load(): Promise<void>
+ async load() {}
 
   abstract get firstName(): string | null
   abstract get lastName(): string | null
@@ -41,6 +41,8 @@ export abstract class ServiceTime {
   abstract service: string
   loaded = false
 
+  async load() {}
+
   abstract get timeString(): string | null
   abstract get id(): string | null
   abstract get meet(): string | null
@@ -52,5 +54,4 @@ export abstract class ServiceTime {
     if (!this.timeString) return null
     return parseTime(this.timeString)
   }
-
 }

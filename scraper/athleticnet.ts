@@ -34,7 +34,6 @@ export class AthleticNet extends Service {
     const searchResults = await this.search(query)
     const topResult = searchResults[0]
     const athlete = new AthleticNetAthlete(topResult.id)
-    athlete.load()
     return athlete
   }
 }
@@ -159,7 +158,6 @@ export class AthleticNetTime extends ServiceTime {
 
     this.loaded = true
   }
-  async load() {}
 
   get timeString() {
     return this._data.Result.replace(/a$/, '')

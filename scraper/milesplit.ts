@@ -27,7 +27,6 @@ export class MileSplit extends Service {
     const searchResults = await this.search(query)
     const topResult = searchResults[0]
     const athlete = new MileSplitAthlete(topResult.id)
-    athlete.load()
     return athlete
   }
 }
