@@ -1,6 +1,7 @@
 import { Temporal } from 'temporal-polyfill'
-import { Matcher, evaluateMatchers, parseTime, type TODO } from './helpers'
+import { Matcher, evaluateMatchers } from './helpers'
 import { Service, ServiceAthlete, ServiceTime } from './service'
+import { AthleticNetAPISearch, AthleticNetAPITFAthlete, AthleticNetAPIXCAthlete } from './apiTypes'
 
 export class AthleticNet extends Service {
   async _search(query: string) {
@@ -9,16 +10,14 @@ export class AthleticNet extends Service {
         query
       )}`
     )
-    const json = await response.json()
-    return json.response.docs.filter(
-      (result) => result.type === 'Athlete'
-    ) as TODO[]
+    const json = (await response.json()) as AthleticNetAPISearch
+    return json.response.docs.filter((result) => result.type === 'Athlete')
   }
   async search(query: string) {
     const subtextRegex = /^(.+) \((.+)\)\|\|(.+), ([A-Z]+)/
     const rawResults = await this._search(query)
     return rawResults.map((result) => {
-      const [match, school, schoolType, city, state] =
+      const [_match, school, _schoolType, city, state] =
         result.subtext.match(subtextRegex) || []
       return {
         id: result.id_db,
@@ -41,38 +40,40 @@ export class AthleticNet extends Service {
 export class AthleticNetAthlete extends ServiceAthlete {
   service = 'Athletic.net'
 
-  _info: TODO
-  _xcMeets: TODO
-  _xcEvents: TODO
-  _xcTimes: TODO
-  _tfMeets: TODO
-  _tfEvents: TODO
-  _tfTimes: TODO
+  _info: AthleticNetAPIXCAthlete['athlete'] | null = null
+  _xcMeets: AthleticNetAPIXCAthlete['meets'] | null = null
+  _xcEvents: AthleticNetAPIXCAthlete['distancesXC'] | null = null
+  _xcTimes: AthleticNetAPIXCAthlete['resultsXC'] | null = null
+  _tfMeets: AthleticNetAPITFAthlete['meets'] | null = null
+  _tfEvents: AthleticNetAPITFAthlete['eventsTF'] | null = null
+  _tfTimes: AthleticNetAPITFAthlete['resultsTF'] | null = null
 
   async load() {
     const xcResponse = await fetch(
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=xc&level=`
     )
-    const xcJson = await xcResponse.json()
+    const xcJson = (await xcResponse.json()) as AthleticNetAPIXCAthlete
+    console.log('Athletic.net XC API response:', xcJson)
     this._info = xcJson.athlete
-    this._xcMeets = xcJson.meets
-    this._xcEvents = xcJson.distancesXC
-    this._xcTimes = xcJson.resultsXC
+    this._xcMeets = xcJson.meets!
+    this._xcEvents = xcJson.distancesXC!
+    this._xcTimes = xcJson.resultsXC!
 
     const tfResponse = await fetch(
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=tf&level=`
     )
-    const tfJson = await tfResponse.json()
-    this._tfMeets = tfJson.meets
-    this._tfEvents = tfJson.eventsTF
-    this._tfTimes = tfJson.resultsTF
+    const tfJson = (await tfResponse.json()) as AthleticNetAPITFAthlete
+    console.log('Athletic.net T&F API response:', tfJson)
+    this._tfMeets = tfJson.meets!
+    this._tfEvents = tfJson.eventsTF!
+    this._tfTimes = tfJson.resultsTF!
 
     this.times = [
       ...this._xcTimes.map(
-        (data) => new AthleticNetTime(data, 'xc', this._xcMeets, this._xcEvents)
+        (data) => new AthleticNetTime(data, 'xc', this._xcMeets!, this._xcEvents!)
       ),
       ...this._tfTimes.map(
-        (data) => new AthleticNetTime(data, 'tf', this._tfMeets, this._tfEvents)
+        (data) => new AthleticNetTime(data, 'tf', this._tfMeets!, this._tfEvents!)
       ),
     ]
 
@@ -80,13 +81,13 @@ export class AthleticNetAthlete extends ServiceAthlete {
   }
 
   get firstName() {
-    return this._info.firstName || null
+    return this._info?.FirstName || null
   }
   get lastName() {
-    return this._info.lastName || null
+    return this._info?.LastName || null
   }
   get gender() {
-    return this._info.gender || null
+    return this._info?.Gender || null
   }
 
   get urls() {
@@ -96,7 +97,7 @@ export class AthleticNetAthlete extends ServiceAthlete {
     ]
   }
   get pfpUrl() {
-    return this._info.profilePhotoUrl || null
+    return this._info?.PhotoUrl || null
   }
 }
 
@@ -144,12 +145,17 @@ const athleticNetMetersMatchers: Matcher<number>[] = [
 export class AthleticNetTime extends ServiceTime {
   service = 'Athletic.net'
 
-  _data: TODO
-  _type: TODO
-  _meets: TODO
-  _events: TODO
+  _data: AthleticNetAPITFAthlete['resultsTF'][0] | AthleticNetAPIXCAthlete['resultsXC'][0]
+  _type: 'tf' | 'xc'
+  _meets: AthleticNetAPITFAthlete['meets']
+  _events: AthleticNetAPITFAthlete['eventsTF'] | AthleticNetAPIXCAthlete['distancesXC']
 
-  constructor(data: TODO, type: TODO, meets: TODO, events: TODO) {
+  constructor(
+    data: AthleticNetAPITFAthlete['resultsTF'][0] | AthleticNetAPIXCAthlete['resultsXC'][0],
+    type: 'tf' | 'xc',
+    meets: AthleticNetAPITFAthlete['meets'],
+    events: AthleticNetAPITFAthlete['eventsTF'] | AthleticNetAPIXCAthlete['distancesXC']
+  ) {
     super()
     this._data = data
     this._type = type
@@ -166,7 +172,7 @@ export class AthleticNetTime extends ServiceTime {
   }
 
   get id() {
-    return this._data.IDResult
+    return String(this._data.IDResult)
   }
   get meet() {
     return this._meets[this._data.MeetID].MeetName
@@ -177,25 +183,28 @@ export class AthleticNetTime extends ServiceTime {
 
   get _eventCode() {
     const eventIdentifier =
-      this._data[this._type === 'tf' ? 'EventID' : 'Distance']
+      'EventID' in this._data ? this._data.EventID : this._data.Distance
     const eventData = this._events.find(
       (event) =>
-        event[this._type === 'tf' ? 'IDEvent' : 'Meters'] === eventIdentifier
+        'IDEvent' in event ? event.IDEvent : event.Meters === eventIdentifier
     )
+    if (!eventData) return null
     const eventCode =
-      this._type === 'tf'
+      'Event' in eventData
         ? eventData.Event.toLowerCase().trim()
         : `${eventData.Distance} ${eventData.Units.toLowerCase()}`
     return eventCode
   }
   get event() {
+    if (!this._eventCode) return null
     return evaluateMatchers(
       this._eventCode,
       athleticNetPrettyMatchers,
-      this._eventCode.toLowerCase() as string
+      this._eventCode.toLowerCase()
     )
   }
   get meters() {
+    if (!this._eventCode) return null
     return evaluateMatchers(this._eventCode, athleticNetMetersMatchers, null)
   }
 }
