@@ -4,18 +4,17 @@ import { MileSplit, MileSplitAthlete } from './milesplit'
 import { TODO, parseTime, pickVersion } from './helpers'
 
 export class Scraper {
-  constructor() {
-    throw new Error('The Scraper class should not be constructed')
-  }
+  athleticNet = new AthleticNet()
+  mileSplit = new MileSplit()
 
-  static async search(query: string) {
+  async search(query: string) {
     return {
-      mileSplit: await MileSplit.search(query),
-      athleticNet: await AthleticNet.search(query),
+      mileSplit: await this.mileSplit.search(query),
+      athleticNet: await this.athleticNet.search(query),
     }
   }
-  static async findAthlete(query: string) {
-    const results = await Scraper.search(query)
+  async findAthlete(query: string) {
+    const results = await this.search(query)
     const topIds = {
       mileSplit: results.mileSplit[0]?.id,
       athleticNet: results.athleticNet[0]?.id,

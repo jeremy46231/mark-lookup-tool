@@ -1,12 +1,9 @@
 import { Temporal } from 'temporal-polyfill'
 import { Matcher, evaluateMatchers, parseTime, type TODO } from './helpers'
+import { Service, ServiceAthlete, ServiceTime } from './service'
 
-export class AthleticNet {
-  constructor() {
-    throw new Error('The AthleticNet class should not be constructed')
-  }
-
-  static async _search(query: string) {
+export class AthleticNet extends Service {
+  async _search(query: string) {
     const response = await fetch(
       `https://www.athletic.net/api/v1/AutoComplete/search?q=${encodeURIComponent(
         query
@@ -17,9 +14,9 @@ export class AthleticNet {
       (result) => result.type === 'Athlete'
     ) as TODO[]
   }
-  static async search(query: string) {
+  async search(query: string) {
     const subtextRegex = /^(.+) \((.+)\)\|\|(.+), ([A-Z]+)/
-    const rawResults = await AthleticNet._search(query)
+    const rawResults = await this._search(query)
     return rawResults.map((result) => {
       const [match, school, schoolType, city, state] =
         result.subtext.match(subtextRegex) || []
@@ -33,8 +30,8 @@ export class AthleticNet {
       }
     })
   }
-  static async findAthlete(query: string) {
-    const searchResults = await AthleticNet.search(query)
+  async findAthlete(query: string) {
+    const searchResults = await this.search(query)
     const topResult = searchResults[0]
     const athlete = new AthleticNetAthlete(topResult.id)
     athlete.load()
@@ -42,10 +39,8 @@ export class AthleticNet {
   }
 }
 
-export class AthleticNetAthlete {
+export class AthleticNetAthlete extends ServiceAthlete {
   service = 'Athletic.net'
-  loaded = false
-  times: AthleticNetTime[] = []
 
   _info: TODO
   _xcMeets: TODO
@@ -54,8 +49,6 @@ export class AthleticNetAthlete {
   _tfMeets: TODO
   _tfEvents: TODO
   _tfTimes: TODO
-
-  constructor(public id: string) {}
 
   async load() {
     const xcResponse = await fetch(
@@ -92,9 +85,6 @@ export class AthleticNetAthlete {
   }
   get lastName() {
     return this._info.lastName || null
-  }
-  get fullName() {
-    return [this.firstName, this.lastName].filter((s) => s).join(' ') || null
   }
   get gender() {
     return this._info.gender || null
@@ -152,9 +142,8 @@ const athleticNetMetersMatchers: Matcher<number>[] = [
   [/^(\d+(?:\.\d+))k Steeplechase$/i, (s) => parseFloat(s ?? 'NaN') * 1000],
 ]
 
-export class AthleticNetTime {
+export class AthleticNetTime extends ServiceTime {
   service = 'Athletic.net'
-  loaded = true
 
   _data: TODO
   _type: TODO
@@ -162,20 +151,20 @@ export class AthleticNetTime {
   _events: TODO
 
   constructor(data: TODO, type: TODO, meets: TODO, events: TODO) {
+    super()
     this._data = data
     this._type = type
     this._meets = meets
     this._events = events
+
+    this.loaded = true
   }
-  load() {}
+  async load() {}
 
   get timeString() {
     return this._data.Result.replace(/a$/, '')
       .replace(/(?<=:\d\d)$/, '.00')
       .replace(/(?<=:\d\d.\d)$/, '0')
-  }
-  get timeSeconds() {
-    return parseTime(this.timeString)
   }
 
   get id() {
@@ -205,7 +194,7 @@ export class AthleticNetTime {
     return evaluateMatchers(
       this._eventCode,
       athleticNetPrettyMatchers,
-      this._eventCode.toLowerCase()
+      this._eventCode.toLowerCase() as string
     )
   }
   get meters() {

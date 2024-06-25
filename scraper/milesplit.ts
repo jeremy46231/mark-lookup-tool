@@ -1,12 +1,9 @@
 import { Temporal } from 'temporal-polyfill'
 import { Matcher, evaluateMatchers, parseTime, type TODO } from './helpers'
+import { Service, ServiceAthlete, ServiceTime } from './service'
 
-export class MileSplit {
-  constructor() {
-    throw new Error('The MileSplit class should not be constructed')
-  }
-
-  static async _search(query: string) {
+export class MileSplit extends Service {
+  async _search(query: string) {
     const response = await fetch(
       `https://www.milesplit.com/api/v1/athletes/search?q=${encodeURIComponent(
         query
@@ -15,8 +12,8 @@ export class MileSplit {
     const json = await response.json()
     return json.data as TODO[]
   }
-  static async search(query: string) {
-    const rawResults = await MileSplit._search(query)
+  async search(query: string) {
+    const rawResults = await this._search(query)
     return rawResults.map((result) => ({
       id: result.id,
       name: [result.firstName, result.lastName].filter((s) => s).join(' '),
@@ -26,8 +23,8 @@ export class MileSplit {
       service: 'MileSplit',
     }))
   }
-  static async findAthlete(query: string) {
-    const searchResults = await MileSplit.search(query)
+  async findAthlete(query: string) {
+    const searchResults = await this.search(query)
     const topResult = searchResults[0]
     const athlete = new MileSplitAthlete(topResult.id)
     athlete.load()
@@ -35,15 +32,12 @@ export class MileSplit {
   }
 }
 
-export class MileSplitAthlete {
+export class MileSplitAthlete extends ServiceAthlete {
   service = 'MileSplit'
-  loaded = false
-  times: MileSplitTime[] = []
 
   _info: TODO
   _times: TODO[] = []
 
-  constructor(public id: string) {}
 
   async load() {
     const statsResponse = await fetch(
@@ -68,9 +62,6 @@ export class MileSplitAthlete {
   }
   get lastName() {
     return this._info.lastName || null
-  }
-  get fullName() {
-    return [this.firstName, this.lastName].filter((s) => s).join(' ') || null
   }
   get gender() {
     return this._info.gender || null
@@ -105,15 +96,15 @@ const mileSplitMetersMatchers: Matcher<number>[] = [
   [/(\d+(?:\.\d+)?)mile/i, (s) => parseFloat(s ?? 'NaN') * 1609.344],
 ]
 
-export class MileSplitTime {
+export class MileSplitTime extends ServiceTime {
   service = 'MileSplit'
-  loaded = false
 
   _data: TODO
   _meet: TODO = undefined
-  date: TODO
+  _date: Temporal.PlainDate | null = null
 
   constructor(data: TODO) {
+    super()
     this._data = data
   }
   async load() {
@@ -122,7 +113,7 @@ export class MileSplitTime {
     )
     const meetJson = await response.json()
     this._meet = meetJson.data
-    this.date = Temporal.PlainDate.from(this._meet.dateEnd)
+    this._date = Temporal.PlainDate.from(this._meet.dateEnd)
     this.loaded = true
   }
 
@@ -131,6 +122,10 @@ export class MileSplitTime {
   }
   get timeSeconds() {
     return parseTime(this.timeString)
+  }
+
+  get date() {
+    return this._date
   }
 
   get id() {

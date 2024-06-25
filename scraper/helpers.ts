@@ -22,9 +22,9 @@ export type Matcher<Result> = [
 
 export function evaluateMatchers<T extends unknown>(
   input: string,
-  matchers: Matcher<Exclude<unknown, Function>>[],
-  defaultValue: Exclude<unknown, Function>
-): Exclude<unknown, Function> {
+  matchers: Matcher<Exclude<T, Function>>[],
+  defaultValue: Exclude<T, Function>
+): Exclude<T, Function> {
   for (const [matcher, format] of matchers) {
     let match = false
     let matchValue = undefined
