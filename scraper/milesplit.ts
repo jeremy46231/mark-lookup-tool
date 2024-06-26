@@ -1,5 +1,5 @@
 import { Temporal } from 'temporal-polyfill'
-import { Matcher, evaluateMatchers, parseTime } from './helpers'
+import { Matcher, evaluateMatchers, formatMeters, parseTime } from './helpers'
 import { Service, ServiceAthlete, ServiceTime } from './service'
 import {
   MileSplitAPIAthlete,
@@ -86,10 +86,10 @@ export class MileSplitAthlete extends ServiceAthlete {
 }
 
 const mileSplitPrettyMatchers: Matcher<string>[] = [
-  [/^(\d+)m$/i, (s) => `${s} meter`],
+  [/^(\d+)m$/i, (s) => formatMeters(s)],
   [/^(\d+(?:\.\d+)?)mile$/i, (s) => `${s} mile`],
   ['Mile', '1 mile'],
-  [/^(\d+)H$/i, (s) => `${s} meter hurdles`],
+  [/^(\d+)H$/i, (s) => `${formatMeters(s)} hurdles`],
   ['D', 'discus'],
   ['HJ', 'high jump'],
   ['HT', 'hammer throw'],
@@ -98,12 +98,16 @@ const mileSplitPrettyMatchers: Matcher<string>[] = [
   ['PV', 'pole vault'],
   ['S', 'shot put'],
   ['TJ', 'triple jump'],
-  [/^(\d+)mSC$/i, (s) => `${s} meter steeple chase`],
-  [/^(\d+)RW$/i, (s) => `${s} meter race walk`],
+  [/^(\d+)mSC$/i, (s) => `${formatMeters(s)} steeple chase`],
+  [/^(\d+)RW$/i, (s) => `${formatMeters(s)} race walk`],
+  ['Marathon', 'marathon'],
+  ['HalfMar', 'half marathon'],
 ]
 const mileSplitMetersMatchers: Matcher<number>[] = [
   [/^(\d+)(?:m(?:SC)?|h|rw)$/i, (s) => parseInt(s ?? 'NaN')],
   [/(\d+(?:\.\d+)?)mile/i, (s) => parseFloat(s ?? 'NaN') * 1609.344],
+  ['Marathon', 42195],
+  ['HalfMar', 21097.5],
 ]
 
 export class MileSplitTime extends ServiceTime {

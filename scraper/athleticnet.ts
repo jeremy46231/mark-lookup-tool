@@ -1,5 +1,5 @@
 import { Temporal } from 'temporal-polyfill'
-import { Matcher, evaluateMatchers } from './helpers'
+import { Matcher, evaluateMatchers, formatMeters } from './helpers'
 import { Service, ServiceAthlete, ServiceTime } from './service'
 import {
   AthleticNetAPISearch,
@@ -114,23 +114,23 @@ export class AthleticNetAthlete extends ServiceAthlete {
 }
 
 const athleticNetPrettyMatchers: Matcher<string>[] = [
-  [/^(\d+) Meter(?:s| Dash| Fly)$/i, (s) => `${s} meter`],
+  [/^(\d+) Meter(?:s| Dash| Fly)$/i, (s) => formatMeters(s)],
   [/^(\d+(?:\.\d+)?) Miles?$/i, (s) => `${s} mile`],
-  [/^(\d+x\d+)(?:Throwers)? Relay$/i, (s) => `${s} meter relay`],
+  [/^(\d+x\d+)(?:Throwers)? Relay$/i, (s) => `${formatMeters(s)} relay`],
 
-  [/^(\d+)m Hurdles$/i, (s) => `${s} meter hurdles`],
+  [/^(\d+)m Hurdles$/i, (s) => `${formatMeters(s)} hurdles`],
   [/^(\d+)y Hurdles$/i, (s) => `${s} yard hurdles`],
 
   [/^(\d+(?:\.\d+))k Steeplechase$/i, (s) => `${s} kilometer steeple chase`],
   [/^(\d+) Mile Steeplechase$/i, (s) => `${s} mile steeple chase`],
-  [/^(\d+(?:,000)?)m Racewalk$/i, (s) => `${s} meter race walk`],
+  [/^(\d+(?:,000)?)m Racewalk$/i, (s) => `${formatMeters(s)} race walk`],
   [/^(\d+) Mile Racewalk$/i, (s) => `${s} mile race walk`],
   ['Mile Racewalk', '1 mile race walk'],
   ['1-Hour Racewalk', '1 hour race walk'],
 
   [
     /^(\d+x\d+(?:\.\d+)?) Shuttle (?:Hurdles|Relay)$/i,
-    (s) => `${s} meter shuttle hurdles`,
+    (s) => `${formatMeters(s)} shuttle hurdles`,
   ],
   [
     /^(\d+x\d+(?:\.\d+)?) Yard Shuttle (?:Hurdles|Relay)$/i,
@@ -138,7 +138,7 @@ const athleticNetPrettyMatchers: Matcher<string>[] = [
   ],
   [/^(\d+x\d+) Yard Relay$/i, (s) => `${s} yard relay`],
   [/^(\d+)xMile Relay$/i, (s) => `${s}x1 mile relay`],
-  [/^[SDM]MR (\d+)m$/i, (s) => `${s} meter medley relay`],
+  [/^[SDM]MR (\d+)m$/i, (s) => `${formatMeters(s)} medley relay`],
   [/^[SDM]MR (\d+)y$/i, (s) => `${s} yard medley relay`],
   [/^[SDM]MR (\d+(?:\.\d+)?) Mile$/i, (s) => `${s} mile medley relay`],
 ]

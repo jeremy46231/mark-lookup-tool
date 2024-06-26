@@ -15,6 +15,17 @@ export function parseTime(timeString: string) {
   return time
 }
 
+export function formatMeters(meters?: string) {
+  if (!meters) return 'NaN'
+  const number = parseFloat(meters)
+  if (isNaN(number)) return 'NaN'
+  if (number >= 1000) {
+    const kilometers = number / 1000
+    return `${kilometers}k`
+  }
+  return `${meters}m`
+}
+
 export type Matcher<Result> = [
   matcher: string | RegExp,
   replacer: Result | ((match?: string) => Result)
