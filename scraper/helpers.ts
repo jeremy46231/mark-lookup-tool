@@ -21,7 +21,7 @@ export function formatMeters(meters?: string) {
   if (isNaN(number)) return 'NaN'
   if (number >= 1000) {
     const kilometers = number / 1000
-    return `${kilometers}k`
+    if (kilometers % 1 === 0 || kilometers > 10) return `${kilometers}k`
   }
   return `${meters}m`
 }

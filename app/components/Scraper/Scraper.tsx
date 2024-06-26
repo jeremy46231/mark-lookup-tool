@@ -1,55 +1,55 @@
 'use client'
 
-import Image from 'next/image'
-import { useState } from 'react'
-import { runScraper, type passedData } from './runScraper'
+import { use, useId, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import styles from './Scraper.module.css'
+import { runScraper, type passedData } from './runScraper'
 
 export function Scraper() {
   const [query, setQuery] = useState('Dathan Ritzenhein')
-  const [data, setData] = useState<passedData>({
-    name: '',
-    pfpUrl: '',
-    urls: [],
-    times: [],
-  })
+  const [data, setData] = useState<passedData | null>(null)
+  const searchInputID = useId()
 
   const load = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!query.trim()) {
+      setData(null)
+      return
+    }
     setData(await runScraper(query))
   }
 
   return (
-    <div>
-      <form onSubmit={load}>
-        <label>
-          Query:
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </label>
+    <div className={styles.scraper}>
+      <form className={styles.search} onSubmit={load}>
+        <label htmlFor={searchInputID}>Search: </label>
+        <input
+          id={searchInputID}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
         <button type="submit">Load</button>
       </form>
-      <h1>
+      {data && <DataView data={data} />}
+    </div>
+  )
+}
+
+function DataView({ data }: { data: passedData }) {
+  return (
+    <div className={styles.dataView}>
+      <div className={styles.name}>
         {data.pfpUrl && (
-          <>
+          <span className={styles.pfp}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={data.pfpUrl}
-              alt="Profile Picture"
-              style={{
-                height: '1.5em',
-                // aspectRatio: '1/1',
-              }}
-            />{' '}
-          </>
+            <img src={data.pfpUrl} alt={`${data.name}'s profile picture`} />
+          </span>
         )}
         {data.name ?? ''}
-      </h1>
+      </div>
 
-      <table>
+      <table className={styles.timesTable}>
         <thead>
           <tr>
             <th>Meet</th>
