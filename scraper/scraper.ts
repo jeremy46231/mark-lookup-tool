@@ -19,6 +19,7 @@ export class Scraper {
       this.sources.map((source) => source.findAthlete(query))
     )
     const athlete = new Athlete(results)
+    await athlete.load()
     return athlete
   }
 }

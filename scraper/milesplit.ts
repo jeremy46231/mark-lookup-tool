@@ -1,6 +1,11 @@
 import { Temporal } from 'temporal-polyfill'
-import { Matcher, evaluateMatchers, parseTime, type TODO } from './helpers'
+import { Matcher, evaluateMatchers, parseTime } from './helpers'
 import { Service, ServiceAthlete, ServiceTime } from './service'
+import {
+  MileSplitAPIAthlete,
+  MileSplitAPIMeet,
+  MileSplitAPISearch,
+} from './apiTypes'
 
 export class MileSplit extends Service {
   async _search(query: string) {
@@ -9,8 +14,8 @@ export class MileSplit extends Service {
         query
       )}`
     )
-    const json = await response.json()
-    return json.data as TODO[]
+    const json = (await response.json()) as MileSplitAPISearch
+    return json.data
   }
   async search(query: string) {
     const rawResults = await this._search(query)
@@ -27,6 +32,7 @@ export class MileSplit extends Service {
     const searchResults = await this.search(query)
     const topResult = searchResults[0]
     const athlete = new MileSplitAthlete(topResult.id)
+    await athlete.load()
     return athlete
   }
 }
@@ -34,15 +40,14 @@ export class MileSplit extends Service {
 export class MileSplitAthlete extends ServiceAthlete {
   service = 'MileSplit'
 
-  _info: TODO
-  _times: TODO[] = []
-
+  _info: MileSplitAPIAthlete['_embedded']['athlete'] | null = null
+  _times: MileSplitAPIAthlete['data'] | null = null
 
   async load() {
     const statsResponse = await fetch(
       `https://www.milesplit.com/api/v1/athletes/${this.id}/stats`
     )
-    const statsJson = (await statsResponse.json()) as TODO
+    const statsJson = (await statsResponse.json()) as MileSplitAPIAthlete
     this._info = statsJson._embedded.athlete
     this._times = statsJson.data
 
@@ -53,24 +58,26 @@ export class MileSplitAthlete extends ServiceAthlete {
 
     this.times = this._times.map((data) => new MileSplitTime(data))
 
+    await Promise.all(this.times.map((time) => time.load()))
+
     this.loaded = true
   }
 
   get firstName() {
-    return this._info.firstName || null
+    return this._info?.firstName || null
   }
   get lastName() {
-    return this._info.lastName || null
+    return this._info?.lastName || null
   }
   get gender() {
-    return this._info.gender || null
+    return this._info?.gender || null
   }
 
   get urls() {
     return [`https://milesplit.com/athletes/${this.id}`]
   }
   get pfpUrl() {
-    return this._info.profilePhotoUrl || null
+    return this._info?.profilePhotoUrl || null
   }
 }
 
@@ -98,11 +105,11 @@ const mileSplitMetersMatchers: Matcher<number>[] = [
 export class MileSplitTime extends ServiceTime {
   service = 'MileSplit'
 
-  _data: TODO
-  _meet: TODO = undefined
+  _data: MileSplitAPIAthlete['data'][number]
+  _meet: MileSplitAPIMeet['data'] | null = null
   _date: Temporal.PlainDate | null = null
 
-  constructor(data: TODO) {
+  constructor(data: MileSplitAPIAthlete['data'][number]) {
     super()
     this._data = data
   }
@@ -110,7 +117,7 @@ export class MileSplitTime extends ServiceTime {
     const response = await fetch(
       `https://www.milesplit.com/api/v1/meets/${this._data.meetId}`
     )
-    const meetJson = await response.json()
+    const meetJson = (await response.json()) as MileSplitAPIMeet
     this._meet = meetJson.data
     this._date = Temporal.PlainDate.from(this._meet.dateEnd)
     this.loaded = true

@@ -21,7 +21,7 @@ export type AthleticNetAPISearch = {
     }[]
   }
 }
-type AthleticNetAPIGenericAthlete = {
+type AthleticNetAPIAthleteCommon = {
   level: number
   athlete: {
     IDAthlete: number
@@ -69,7 +69,7 @@ type AthleticNetAPIGenericAthlete = {
   unattachedCalendars: {}
   synonyms: any[]
 }
-export type AthleticNetAPIXCAthlete = AthleticNetAPIGenericAthlete & {
+export type AthleticNetAPIXCAthlete = AthleticNetAPIAthleteCommon & {
   resultsTF: null
   eventsTF: null
   resultsXC: {
@@ -95,7 +95,7 @@ export type AthleticNetAPIXCAthlete = AthleticNetAPIGenericAthlete & {
   }[]
   relayTeamMembers: null
 }
-export type AthleticNetAPITFAthlete = AthleticNetAPIGenericAthlete & {
+export type AthleticNetAPITFAthlete = AthleticNetAPIAthleteCommon & {
   resultsTF: {
     IDResult: number
     AthleteID: number
@@ -132,4 +132,126 @@ export type AthleticNetAPITFAthlete = AthleticNetAPIGenericAthlete & {
   resultsXC: null
   distancesXC: null
   relayTeamMembers: null
+}
+export type AthleticNetAPIAthlete =
+  | AthleticNetAPIXCAthlete
+  | AthleticNetAPITFAthlete
+
+export type MileSplitAPISearch = {
+  _meta: {
+    created: number
+    cache: {
+      fresh: boolean
+      ttl: number
+    }
+    status_code: number
+  }
+  _links: {
+    self: {
+      href: string
+      method: string
+    }
+  }
+  data: {
+    id: string
+    firstName: string
+    lastName: string
+    city: string
+    state: string
+    country: string
+    schoolName: string
+    collegeName: null
+  }[]
+}
+export type MileSplitAPIAthlete = {
+  _meta: {
+    created: number
+    cache: {
+      fresh: boolean
+      ttl: number
+    }
+    status_code: number
+  }
+  _links: {
+    self: {
+      href: string
+      method: string
+    }
+    up: {
+      href: string
+      method: string
+    }
+  }
+  _embedded: {
+    athlete: {
+      id: string
+      siteSubdomain: string
+      firstName: string
+      lastName: string
+      slug: string
+      gender: string
+      schoolId: string
+      gradYear: string
+      collegeYear: string
+      collegeId: string
+      nickname: string
+      birthDate: string
+      birthYear: string
+      note: string
+      honors: string
+      specialty: string
+      city: string
+      state: string
+      country: string
+      isProfilePhoto: string
+      hide: string
+      usatf: null
+      tfrrsId: null
+      lastTouch: string
+      teamId: string
+      profilePhotoUrl: string
+    }
+  }
+  data: {
+    id: string
+    eventCode: string
+    meetId: string
+    season: string
+    round: string
+    units: string
+    meetName: string
+    mark: string
+  }[]
+}
+export type MileSplitAPIMeet = {
+  _meta: {
+    created: number
+    cache: {
+      fresh: boolean
+      ttl: number
+    }
+    status_code: number
+  }
+  _links: {
+    self: {
+      href: string
+      method: string
+    }
+    list: {
+      href: string
+      method: string
+    }
+  }
+  data: {
+    id: string
+    name: string
+    dateStart: string
+    dateEnd: string
+    season: string
+    seasonYear: string
+    venueCity: string
+    venueState: string
+    venueCountry: string
+    registrationActive: null
+  }
 }

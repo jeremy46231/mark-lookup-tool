@@ -1,7 +1,11 @@
 import { Temporal } from 'temporal-polyfill'
 import { Matcher, evaluateMatchers } from './helpers'
 import { Service, ServiceAthlete, ServiceTime } from './service'
-import { AthleticNetAPISearch, AthleticNetAPITFAthlete, AthleticNetAPIXCAthlete } from './apiTypes'
+import {
+  AthleticNetAPISearch,
+  AthleticNetAPITFAthlete,
+  AthleticNetAPIXCAthlete,
+} from './apiTypes'
 
 export class AthleticNet extends Service {
   async _search(query: string) {
@@ -33,6 +37,7 @@ export class AthleticNet extends Service {
     const searchResults = await this.search(query)
     const topResult = searchResults[0]
     const athlete = new AthleticNetAthlete(topResult.id)
+    await athlete.load()
     return athlete
   }
 }
@@ -53,7 +58,6 @@ export class AthleticNetAthlete extends ServiceAthlete {
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=xc&level=`
     )
     const xcJson = (await xcResponse.json()) as AthleticNetAPIXCAthlete
-    console.log('Athletic.net XC API response:', xcJson)
     this._info = xcJson.athlete
     this._xcMeets = xcJson.meets!
     this._xcEvents = xcJson.distancesXC!
@@ -63,19 +67,22 @@ export class AthleticNetAthlete extends ServiceAthlete {
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=tf&level=`
     )
     const tfJson = (await tfResponse.json()) as AthleticNetAPITFAthlete
-    console.log('Athletic.net T&F API response:', tfJson)
     this._tfMeets = tfJson.meets!
     this._tfEvents = tfJson.eventsTF!
     this._tfTimes = tfJson.resultsTF!
 
     this.times = [
       ...this._xcTimes.map(
-        (data) => new AthleticNetTime(data, 'xc', this._xcMeets!, this._xcEvents!)
+        (data) =>
+          new AthleticNetTime(data, 'xc', this._xcMeets!, this._xcEvents!)
       ),
       ...this._tfTimes.map(
-        (data) => new AthleticNetTime(data, 'tf', this._tfMeets!, this._tfEvents!)
+        (data) =>
+          new AthleticNetTime(data, 'tf', this._tfMeets!, this._tfEvents!)
       ),
     ]
+
+    await Promise.all(this.times.map((time) => time.load()))
 
     this.loaded = true
   }
@@ -145,16 +152,24 @@ const athleticNetMetersMatchers: Matcher<number>[] = [
 export class AthleticNetTime extends ServiceTime {
   service = 'Athletic.net'
 
-  _data: AthleticNetAPITFAthlete['resultsTF'][0] | AthleticNetAPIXCAthlete['resultsXC'][0]
+  _data:
+    | AthleticNetAPITFAthlete['resultsTF'][0]
+    | AthleticNetAPIXCAthlete['resultsXC'][0]
   _type: 'tf' | 'xc'
   _meets: AthleticNetAPITFAthlete['meets']
-  _events: AthleticNetAPITFAthlete['eventsTF'] | AthleticNetAPIXCAthlete['distancesXC']
+  _events:
+    | AthleticNetAPITFAthlete['eventsTF']
+    | AthleticNetAPIXCAthlete['distancesXC']
 
   constructor(
-    data: AthleticNetAPITFAthlete['resultsTF'][0] | AthleticNetAPIXCAthlete['resultsXC'][0],
+    data:
+      | AthleticNetAPITFAthlete['resultsTF'][0]
+      | AthleticNetAPIXCAthlete['resultsXC'][0],
     type: 'tf' | 'xc',
     meets: AthleticNetAPITFAthlete['meets'],
-    events: AthleticNetAPITFAthlete['eventsTF'] | AthleticNetAPIXCAthlete['distancesXC']
+    events:
+      | AthleticNetAPITFAthlete['eventsTF']
+      | AthleticNetAPIXCAthlete['distancesXC']
   ) {
     super()
     this._data = data
@@ -184,9 +199,8 @@ export class AthleticNetTime extends ServiceTime {
   get _eventCode() {
     const eventIdentifier =
       'EventID' in this._data ? this._data.EventID : this._data.Distance
-    const eventData = this._events.find(
-      (event) =>
-        'IDEvent' in event ? event.IDEvent : event.Meters === eventIdentifier
+    const eventData = this._events.find((event) =>
+      'IDEvent' in event ? event.IDEvent : event.Meters === eventIdentifier
     )
     if (!eventData) return null
     const eventCode =

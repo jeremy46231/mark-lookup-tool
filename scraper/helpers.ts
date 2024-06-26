@@ -1,4 +1,4 @@
-export type TODO = any
+// export type TODO = any
 
 export function parseTime(timeString: string) {
   const parts = timeString.split(':')
@@ -39,7 +39,7 @@ export function evaluateMatchers<T extends unknown>(
     }
     if (match) {
       if (typeof format === 'function') {
-        return (format as ((match?: string | undefined) => T))(matchValue)
+        return (format as (match?: string | undefined) => T)(matchValue)
       } else {
         return format
       }
