@@ -44,6 +44,10 @@ export class MileSplitAthlete extends ServiceAthlete {
   _times: MileSplitAPIAthlete['data'] | null = null
 
   async load() {
+    if (this.loaded) {
+      console.warn('Already loaded MileSplit athlete', this.id)
+      return
+    }
     const statsResponse = await fetch(
       `https://www.milesplit.com/api/v1/athletes/${this.id}/stats`
     )
@@ -114,6 +118,10 @@ export class MileSplitTime extends ServiceTime {
     this._data = data
   }
   async load() {
+    if (this.loaded) {
+      console.warn('Already loaded MileSplit time', this.id)
+      return
+    }
     const response = await fetch(
       `https://www.milesplit.com/api/v1/meets/${this._data.meetId}`
     )

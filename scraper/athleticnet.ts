@@ -54,6 +54,11 @@ export class AthleticNetAthlete extends ServiceAthlete {
   _tfTimes: AthleticNetAPITFAthlete['resultsTF'] | null = null
 
   async load() {
+    if (this.loaded) {
+      console.warn('Already loaded Athletic.net athlete', this.id)
+      return
+    }
+    console.log('loading athletic.net athlete', this.id)
     const xcResponse = await fetch(
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=xc&level=`
     )

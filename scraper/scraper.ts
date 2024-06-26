@@ -28,13 +28,18 @@ export class Athlete {
   loaded = false
   times: Time[] = []
 
+  /**
+   * @param sources - The sources to pull data from, must be already loaded
+   */
   constructor(public sources: ServiceAthlete[]) {}
 
   async load() {
-    await Promise.all(this.sources.map((source) => source.load()))
+    if (this.loaded) {
+      console.warn('Already loaded Athlete', this.fullName)
+      return
+    }
 
     const timeSources = this.sources.flatMap((source) => source.times)
-    await Promise.all(timeSources.map((source) => source.load()))
 
     const matchingTimeSources = new Map<string, ServiceTime[]>()
 
