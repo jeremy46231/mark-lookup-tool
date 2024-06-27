@@ -77,15 +77,14 @@ export function approxSame(a: unknown, b: unknown) {
 
 export function pickVersion<T extends unknown>(
   versions: T[],
+  defaultValue: T,
   {
     filter = (v: T) => !!v,
     forceFilter = false,
-    defaultValue = undefined,
     comparision = approxSame,
   }: {
     filter?: ((v: T) => boolean) | string | RegExp
     forceFilter?: boolean
-    defaultValue?: T
     comparision?: (a: T, b: T) => boolean
   } = {}
 ) {

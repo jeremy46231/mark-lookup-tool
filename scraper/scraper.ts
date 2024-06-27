@@ -84,6 +84,7 @@ export class Athlete {
   get firstName() {
     return pickVersion(
       this.sources.map((source) => source.firstName),
+      null,
       {
         filter: 'string',
       }
@@ -92,6 +93,7 @@ export class Athlete {
   get lastName() {
     return pickVersion(
       this.sources.map((source) => source.lastName),
+      null,
       {
         filter: 'string',
       }
@@ -103,6 +105,7 @@ export class Athlete {
   get gender() {
     return pickVersion(
       this.sources.map((source) => source),
+      null,
       {
         filter: /M|F/,
       }
@@ -115,6 +118,7 @@ export class Athlete {
   get pfpUrl() {
     return pickVersion(
       this.sources.map((source) => source.pfpUrl),
+      null,
       {
         filter: 'string',
       }
@@ -128,6 +132,7 @@ export class Time {
   get timeString() {
     return pickVersion(
       this.sources.map((source) => source.timeString),
+      null,
       { filter: /^(\d+:)?\d+\.\d\d$/ }
     )
   }
@@ -137,26 +142,38 @@ export class Time {
   }
 
   get meet() {
-    return pickVersion(this.sources.map((source) => source.meet))
+    return pickVersion(
+      this.sources.map((source) => source.meet),
+      null
+    )
   }
   get date() {
     return pickVersion(
-      this.sources.map((source) => source.date, {
-        comparison: (a: Temporal.PlainDate, b: Temporal.PlainDate) =>
-          a.equals(b),
-      })
+      this.sources.map((source) => source.date),
+      null,
+      {
+        comparision: (
+          a: Temporal.PlainDate | null,
+          b: Temporal.PlainDate | null
+        ) =>
+          a instanceof Temporal.PlainDate && b instanceof Temporal.PlainDate
+            ? a.equals(b)
+            : false,
+      }
     )
   }
 
   get event() {
     return pickVersion(
       this.sources.map((source) => source.event),
+      null,
       { filter: 'string' }
     )
   }
   get meters() {
     return pickVersion(
       this.sources.map((source) => source.meters),
+      null,
       { filter: 'number' }
     )
   }

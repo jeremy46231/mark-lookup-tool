@@ -1,9 +1,10 @@
 'use client'
 
-import { use, useId, useState } from 'react'
+import { use, useId, useMemo, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import styles from './Scraper.module.css'
 import { runScraper, type passedData } from './runScraper'
+import { TimesTable } from './TimesTable'
 
 export function Scraper() {
   const [query, setQuery] = useState('Dathan Ritzenhein')
@@ -36,7 +37,31 @@ export function Scraper() {
   )
 }
 
+const makeTableData = (data: passedData) =>
+  data.times.map((time) => {
+    return {
+      meet: time.meet,
+      dateString: time.date
+        ? Temporal.PlainDate.from(time.date).toLocaleString(undefined, {
+            dateStyle: 'long',
+          })
+        : '',
+      dateObject: time.date
+        ? new Date(
+            Temporal.PlainDate.from(time.date).toZonedDateTime({
+              timeZone: Temporal.Now.timeZoneId(),
+            }).epochMilliseconds
+          )
+        : null,
+      event: time.event,
+      timeString: time.timeString,
+    }
+  })
+export type tableData = ReturnType<typeof makeTableData>[number]
+
 function DataView({ data }: { data: passedData }) {
+  const tableData = useMemo(() => makeTableData(data), [data])
+
   return (
     <div className={styles.dataView}>
       <div className={styles.name}>
@@ -49,30 +74,7 @@ function DataView({ data }: { data: passedData }) {
         {data.name ?? ''}
       </div>
 
-      <div className={styles.timesTable}>
-        <div className={styles.header}>
-          <span>Meet</span>
-          <span>Date</span>
-          <span>Event</span>
-          <span>Time</span>
-        </div>
-
-        {data.times.map((time, i) => (
-          <div key={i}>
-            <span>{time.meet}</span>
-            <span>
-              {time.date
-                ? Temporal.PlainDate.from(time.date).toLocaleString(undefined, {
-                    dateStyle: 'long',
-                  })
-                : ''}
-            </span>
-            <span>{time.event}</span>
-            <span>{time.timeString}</span>
-            {/* {'debug' in time && <span>{JSON.stringify(time.debug)}</span>} */}
-          </div>
-        ))}
-      </div>
+      <TimesTable data={tableData} />
     </div>
   )
 }
