@@ -49,17 +49,28 @@
   }
 }
 
-.dataView {
-  & th,
-  & td {
-    padding: 0.2rem;
-    white-space: nowrap;
-  }
+.timesTable {
+  display: grid;
+  grid-template-columns: 4fr 1fr 1fr 1fr;
+  /* grid-template-columns: repeat(4, 300px); */
+  gap: 0.5rem;
+  white-space: nowrap;
 
-  & td:nth-child(1) {
-    max-width: 50ch;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  & div {
+    grid-column: 1 / -1;
+
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    padding: 0.5rem;
+
+    display: grid;
+    grid-template-columns: subgrid;
+
+    & span:nth-child(1) {
+      /* display: inline-block; */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 20ch;
+    }
   }
 }

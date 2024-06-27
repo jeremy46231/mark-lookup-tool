@@ -49,34 +49,30 @@ function DataView({ data }: { data: passedData }) {
         {data.name ?? ''}
       </div>
 
-      <table className={styles.timesTable}>
-        <thead>
-          <tr>
-            <th>Meet</th>
-            <th>Date</th>
-            <th>Event</th>
-            <th>Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.times.map((time, i) => (
-            <tr key={i}>
-              <td>{time.meet}</td>
-              <td>
-                {time.date
-                  ? Temporal.PlainDate.from(time.date).toLocaleString(
-                      undefined,
-                      { dateStyle: 'long' }
-                    )
-                  : ''}
-              </td>
-              <td>{time.event}</td>
-              <td>{time.timeString}</td>
-              {'debug' in time && <td>{JSON.stringify(time.debug)}</td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className={styles.timesTable}>
+        <div className={styles.header}>
+          <span>Meet</span>
+          <span>Date</span>
+          <span>Event</span>
+          <span>Time</span>
+        </div>
+
+        {data.times.map((time, i) => (
+          <div key={i}>
+            <span>{time.meet}</span>
+            <span>
+              {time.date
+                ? Temporal.PlainDate.from(time.date).toLocaleString(undefined, {
+                    dateStyle: 'long',
+                  })
+                : ''}
+            </span>
+            <span>{time.event}</span>
+            <span>{time.timeString}</span>
+            {/* {'debug' in time && <span>{JSON.stringify(time.debug)}</span>} */}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
