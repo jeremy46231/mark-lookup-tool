@@ -6,21 +6,66 @@ import {
 } from '@tanstack/react-table'
 import type { tableData } from './Scraper'
 import styles from './Scraper.module.css'
+import { Temporal } from 'temporal-polyfill'
+
+function formatTime(time: Temporal.Duration) {
+  const rounded = Temporal.Duration.from(time).round({ largestUnit: 'hour' })
+  const seconds =
+    rounded.seconds +
+    rounded.milliseconds / 1_000 +
+    rounded.microseconds / 1_000_000
+  // prettier-ignore
+  return `${
+    time.hours > 0 ? `${rounded.hours.toFixed(0)}:` : ''
+  }${
+    rounded.minutes.toFixed(0).padStart(2, '0')
+  }:${
+    seconds.toFixed(2).padStart(5, '0')
+  }`
+}
 
 const columnHelper = createColumnHelper<tableData>()
 
 const columns = [
   columnHelper.accessor('meet', {
     header: 'Meet',
+    sortUndefined: 'last',
   }),
-  columnHelper.accessor('dateString', {
+  columnHelper.accessor('date', {
     header: 'Date',
+    cell: (info) => {
+      const date = info.getValue()
+      if (!date) return ''
+      return date.toLocaleString(undefined, {
+        dateStyle: 'long',
+      })
+    },
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.date
+      const b = rowB.original.date
+      if (!a || !b) return 0
+      return Temporal.PlainDate.compare(a, b)
+    },
+    sortUndefined: 'last',
   }),
   columnHelper.accessor('event', {
     header: 'Event',
+    sortUndefined: 'last',
   }),
-  columnHelper.accessor('timeString', {
+  columnHelper.accessor('time', {
     header: 'Time',
+    cell: (info) => {
+      const time = info.getValue()
+      if (!time) return ''
+      return formatTime(time)
+    },
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.time
+      const b = rowB.original.time
+      if (!a || !b) return 0
+      return Temporal.Duration.compare(a, b)
+    },
+    sortUndefined: 'last',
   }),
 ]
 

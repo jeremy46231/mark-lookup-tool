@@ -12,17 +12,11 @@ export async function runScraper(query: string) {
     name: athlete.fullName,
     pfpUrl: athlete.pfpUrl,
     urls: athlete.urls,
-    times: athlete.times.map(time => ({
+    times: athlete.times.map((time) => ({
       meet: time.meet,
       date: time.date?.toString(),
       event: time.event,
-      timeString: time.timeString,
-      // debug: time.sources.map(source => ({
-      //   service: source.service,
-      //   meters: source.meters,
-      //   data: source instanceof MileSplitTime ? source._data : source instanceof AthleticNetTime ? source._data : null,
-      //   timeString: source.timeString,
-      // })),
+      time: time.timeSeconds,
     })),
   }
 

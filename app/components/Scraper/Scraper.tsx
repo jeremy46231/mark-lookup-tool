@@ -40,21 +40,16 @@ export function Scraper() {
 const makeTableData = (data: passedData) =>
   data.times.map((time) => {
     return {
-      meet: time.meet,
-      dateString: time.date
-        ? Temporal.PlainDate.from(time.date).toLocaleString(undefined, {
-            dateStyle: 'long',
+      meet: time.meet ?? undefined,
+      date: time.date ? Temporal.PlainDate.from(time.date) : undefined,
+      event: time.event ?? undefined,
+      time: time.time
+        ? Temporal.Duration.from({
+            milliseconds: Math.round(time.time * 1000),
+          }).round({
+            largestUnit: 'hour',
           })
-        : '',
-      dateObject: time.date
-        ? new Date(
-            Temporal.PlainDate.from(time.date).toZonedDateTime({
-              timeZone: Temporal.Now.timeZoneId(),
-            }).epochMilliseconds
-          )
-        : null,
-      event: time.event,
-      timeString: time.timeString,
+        : undefined,
     }
   })
 export type tableData = ReturnType<typeof makeTableData>[number]
