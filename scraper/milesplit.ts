@@ -106,6 +106,7 @@ const mileSplitPrettyMatchers: Matcher<string>[] = [
 const mileSplitMetersMatchers: Matcher<number>[] = [
   [/^(\d+)(?:m(?:SC)?|h|rw)$/i, (s) => parseInt(s ?? 'NaN')],
   [/(\d+(?:\.\d+)?)mile/i, (s) => parseFloat(s ?? 'NaN') * 1609.344],
+  ['Mile', 1609.344],
   ['Marathon', 42195],
   ['HalfMar', 21097.5],
 ]

@@ -43,6 +43,7 @@ const makeTableData = (data: passedData) =>
       meet: time.meet ?? undefined,
       date: time.date ? Temporal.PlainDate.from(time.date) : undefined,
       event: time.event ?? undefined,
+      meters: time.meters ?? undefined,
       time: time.time
         ? Temporal.Duration.from({
             milliseconds: Math.round(time.time * 1000),

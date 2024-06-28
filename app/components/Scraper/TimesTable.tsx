@@ -2,6 +2,7 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import type { tableData } from './Scraper'
@@ -29,6 +30,7 @@ const columnHelper = createColumnHelper<tableData>()
 const columns = [
   columnHelper.accessor('meet', {
     header: 'Meet',
+    sortingFn: 'alphanumeric',
     sortUndefined: 'last',
   }),
   columnHelper.accessor('date', {
@@ -41,8 +43,8 @@ const columns = [
       })
     },
     sortingFn: (rowA, rowB) => {
-      const a = rowA.original.date
-      const b = rowB.original.date
+      const a = rowA.original.date ?? Temporal.PlainDate.from('1337-01-01')
+      const b = rowB.original.date ?? Temporal.PlainDate.from('1337-01-01')
       if (!a || !b) return 0
       return Temporal.PlainDate.compare(a, b)
     },
@@ -50,6 +52,19 @@ const columns = [
   }),
   columnHelper.accessor('event', {
     header: 'Event',
+    sortingFn: (rowA, rowB) => {
+      const metersA = rowA.original.meters ?? -1
+      const metersB = rowB.original.meters ?? -1
+      const metersDifference = metersA - metersB
+      if (Math.abs(metersDifference) > 0.01) {
+        if (metersDifference < 0) return -1
+        if (metersDifference > 0) return 1
+        return 0
+      }
+      const eventA = rowA.original.event ?? ''
+      const eventB = rowB.original.event ?? ''
+      return eventA.localeCompare(eventB, 'en-US-u-kn')
+    },
     sortUndefined: 'last',
   }),
   columnHelper.accessor('time', {
@@ -74,6 +89,7 @@ export function TimesTable({ data }: { data: tableData[] }) {
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   return (
@@ -82,7 +98,12 @@ export function TimesTable({ data }: { data: tableData[] }) {
         <div className={styles.header} key={headerGroup.id}>
           {headerGroup.headers.map((header) => (
             <span key={header.id}>
-              {flexRender(header.column.columnDef.header, header.getContext())}
+              <button onClick={() => header.column.toggleSorting()}>
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
+              </button>
             </span>
           ))}
         </div>

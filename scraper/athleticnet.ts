@@ -58,7 +58,6 @@ export class AthleticNetAthlete extends ServiceAthlete {
       console.warn('Already loaded Athletic.net athlete', this.id)
       return
     }
-    console.log('loading athletic.net athlete', this.id)
     const xcResponse = await fetch(
       `https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${this.id}&sport=xc&level=`
     )

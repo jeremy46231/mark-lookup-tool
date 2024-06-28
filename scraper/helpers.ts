@@ -2,12 +2,14 @@
 
 export function parseTime(timeString: string) {
   const parts = timeString.split(':')
-  if (parts.length > 2 || timeString.includes('-')) {
+  if (parts.length > 3 || timeString.includes('-')) {
     console.error(`Don't know how to parse this time: ${timeString}`)
     return null
   }
-  const [minutesPart, secondsPart] = parts
-  const time = parseFloat(minutesPart || '0') * 60 + parseFloat(secondsPart)
+  const secondsPart = parts.pop() || '0'
+  const minutesPart = parts.pop() || '0'
+  const hoursPart = parts.pop() || '0'
+  const time = parseFloat(secondsPart) + parseFloat(minutesPart) * 60 + parseFloat(hoursPart) * 3600
   if (isNaN(time)) {
     console.error(`Don't know how to parse this time: ${timeString}`)
     return null

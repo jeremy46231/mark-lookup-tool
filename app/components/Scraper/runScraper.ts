@@ -16,6 +16,7 @@ export async function runScraper(query: string) {
       meet: time.meet,
       date: time.date?.toString(),
       event: time.event,
+      meters: time.meters,
       time: time.timeSeconds,
     })),
   }
