@@ -11,11 +11,11 @@
 .dataView {
   border: 1px solid #aaa;
   border-radius: 5px;
-  padding: 0.5rem;
   margin-bottom: 1rem;
 }
 
 .search {
+  padding: 0.5rem;
   display: flex;
   flex-direction: row;
   align-items: baseline;
@@ -26,6 +26,8 @@
 }
 
 .name {
+  padding: 0.5rem;
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -33,15 +35,15 @@
   gap: 1rem;
 
   margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 
   font-size: 1.5rem;
 }
 
 .pfp {
   display: inline-block;
-  width: 3em;
-  height: 3em;
+  width: 3rem;
+  height: 3rem;
   & img {
     width: 100%;
     height: 100%;
@@ -52,25 +54,45 @@
 .timesTable {
   display: grid;
   grid-template-columns: 3.5fr 1fr 1fr 1fr;
-  /* grid-template-columns: repeat(4, 300px); */
-  gap: 0.5rem;
   white-space: nowrap;
 
   & div {
     grid-column: 1 / -1;
-
-    border: 1px solid #aaa;
-    border-radius: 5px;
-    padding: 0.5rem;
-
     display: grid;
     grid-template-columns: subgrid;
-
-    & span:nth-child(1) {
-      /* display: inline-block; */
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 20ch;
-    }
+    gap: 1ch;
   }
+}
+
+.row {
+  grid-column: 1 / -1;
+
+  border-block-start: 1px solid #aaa;
+  padding: 0.5rem;
+
+  & span:nth-child(1) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 20ch;
+  }
+}
+
+.header {
+  padding: 0.5rem;
+  font-weight: 600;
+}
+.headerItem {
+  & button {
+    background: none;
+    border: none;
+    padding: 0;
+    outline-offset: 0.2rem;
+  }
+}
+
+.sortIcon {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.5rem;
 }

@@ -1,9 +1,11 @@
 import {
+  type Column,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
+  CoreHeader,
 } from '@tanstack/react-table'
 import type { tableData } from './Scraper'
 import styles from './Scraper.module.css'
@@ -97,13 +99,8 @@ export function TimesTable({ data }: { data: tableData[] }) {
       {table.getHeaderGroups().map((headerGroup) => (
         <div className={styles.header} key={headerGroup.id}>
           {headerGroup.headers.map((header) => (
-            <span key={header.id}>
-              <button onClick={() => header.column.toggleSorting()}>
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
-              </button>
+            <span key={header.id} className={styles.headerItem}>
+              <Header header={header} />
             </span>
           ))}
         </div>
@@ -119,5 +116,57 @@ export function TimesTable({ data }: { data: tableData[] }) {
         </div>
       ))}
     </div>
+  )
+}
+
+function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
+  const label = flexRender(header.column.columnDef.header, header.getContext())
+
+  const sort = header.column.getIsSorted()
+  const sortIcon =
+    sort === 'asc' ? (
+      <svg
+        className={styles.sortIcon}
+        aria-label='sorted ascending'
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="
+            M 3, 7
+            L 8, 12
+            L 13, 7
+          "
+          stroke="black"
+          strokeWidth="2"
+        />
+      </svg>
+    ) : sort === 'desc' ? (
+      <svg
+        className={styles.sortIcon}
+        aria-label='sorted descending'
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="
+            M 3, 12
+            L 8, 7
+            L 13, 12
+          "
+          stroke="black"
+          strokeWidth="2"
+        />
+      </svg>
+    ) : (
+      ''
+    )
+
+  return (
+    <button onClick={() => header.column.toggleSorting()}>
+      {label}{sortIcon}
+    </button>
   )
 }

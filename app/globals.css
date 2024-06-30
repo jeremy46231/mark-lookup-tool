@@ -1,7 +1,4 @@
-/*
-  Josh's Custom CSS Reset
-  https://www.joshwcomeau.com/css/custom-css-reset/
-*/
+/* based on https://www.joshwcomeau.com/css/custom-css-reset/ */
 *,
 *::before,
 *::after {
@@ -40,4 +37,12 @@ h6 {
 #root,
 #__next {
   isolation: isolate;
+}
+
+/* Browsers don't use a pointer cursor on buttons by default, imo they should */
+button,
+input[type='button'],
+input[type='reset'],
+input[type='submit'] {
+  cursor: pointer;
 }
