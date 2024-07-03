@@ -96,15 +96,13 @@ export function TimesTable({ data }: { data: tableData[] }) {
 
   return (
     <div className={styles.timesTable}>
-      {table.getHeaderGroups().map((headerGroup) => (
-        <div className={styles.header} key={headerGroup.id}>
-          {headerGroup.headers.map((header) => (
-            <span key={header.id} className={styles.headerItem}>
-              <Header header={header} />
-            </span>
-          ))}
-        </div>
-      ))}
+      <div className={styles.header}>
+        {table.getFlatHeaders().map((header) => (
+          <span key={header.id} className={styles.headerItem}>
+            <Header header={header} />
+          </span>
+        ))}
+      </div>
 
       {table.getRowModel().rows.map((row) => (
         <div key={row.id} className={styles.row}>
@@ -121,22 +119,31 @@ export function TimesTable({ data }: { data: tableData[] }) {
 
 function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
   const label = flexRender(header.column.columnDef.header, header.getContext())
-
   const sort = header.column.getIsSorted()
+
+  return (
+    <button onClick={() => header.column.toggleSorting()}>
+      {label}
+      <SortIcon sort={sort} />
+    </button>
+  )
+}
+
+function SortIcon({ sort }: { sort: false | 'asc' | 'desc' }) {
   const sortIcon =
     sort === 'asc' ? (
       <svg
         className={styles.sortIcon}
-        aria-label='sorted ascending'
+        aria-label="sorted ascending"
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
           d="
-            M 3, 7
-            L 8, 12
-            L 13, 7
+            M 3, 6
+            L 8, 11
+            L 13, 6
           "
           stroke="black"
           strokeWidth="2"
@@ -145,28 +152,49 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
     ) : sort === 'desc' ? (
       <svg
         className={styles.sortIcon}
-        aria-label='sorted descending'
+        aria-label="sorted descending"
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
           d="
-            M 3, 12
-            L 8, 7
-            L 13, 12
+            M 3, 11
+            L 8, 6
+            L 13, 11
           "
           stroke="black"
           strokeWidth="2"
         />
       </svg>
     ) : (
-      ''
+      <svg
+        className={styles.sortIcon}
+        aria-label="sorted descending"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="
+            M 3, 10
+            L 8, 15
+            L 13, 10
+          "
+          stroke="#aaa"
+          strokeWidth="2"
+        />
+        <path
+          d="
+            M 3, 6
+            L 8, 1
+            L 13, 6
+          "
+          stroke="#aaa"
+          strokeWidth="2"
+        />
+      </svg>
     )
 
-  return (
-    <button onClick={() => header.column.toggleSorting()}>
-      {label}{sortIcon}
-    </button>
-  )
+  return sortIcon
 }

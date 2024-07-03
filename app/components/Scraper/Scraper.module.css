@@ -83,14 +83,20 @@
 
 .header {
   padding: 0.5rem;
-  font-weight: 600;
 }
 .headerItem {
+  font-weight: 600;
+
   & button {
     background: none;
     border: none;
     padding: 0;
     outline-offset: 0.2rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5ch;
   }
 }
 
@@ -98,7 +104,6 @@
   display: inline-block;
   width: 1rem;
   height: 1rem;
-  margin-left: 0.5rem;
 }
 
 /* TODO: tweak this breakpoint */
@@ -109,10 +114,17 @@
     white-space: normal;
   }
 
-  div.header {
-    display: flex;
-    justify-content: space-between;
+  .header {
+    display: grid;
+    
+  }
 
+  .headerItem {
+    font-weight: inherit;
+
+    & button {
+      gap: 0.3ch;
+    }
   }
 
   div.row {
@@ -127,6 +139,7 @@
 
       &:nth-child(1) {
         flex-basis: 100%;
+        font-weight: 600;
       }
       &:nth-child(2) {
         width: 50%;

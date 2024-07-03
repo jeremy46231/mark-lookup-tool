@@ -21,6 +21,8 @@ export async function runScraper(query: string) {
     })),
   }
 
+  console.log(athlete.urls.join('\n'))
+
   return data
 }
 

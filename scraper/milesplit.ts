@@ -93,7 +93,7 @@ const mileSplitPrettyMatchers: Matcher<string>[] = [
   ['D', 'discus'],
   ['HJ', 'high jump'],
   ['HT', 'hammer throw'],
-  ['D', 'javelin'],
+  // ['D', 'javelin'], // ??
   ['LJ', 'long jump'],
   ['PV', 'pole vault'],
   ['S', 'shot put'],
@@ -102,6 +102,7 @@ const mileSplitPrettyMatchers: Matcher<string>[] = [
   [/^(\d+)RW$/i, (s) => `${formatMeters(s)} race walk`],
   ['Marathon', 'marathon'],
   ['HalfMar', 'half marathon'],
+  ['Dec', 'decathlon'],
 ]
 const mileSplitMetersMatchers: Matcher<number>[] = [
   [/^(\d+)(?:m(?:SC)?|h|rw)$/i, (s) => parseInt(s ?? 'NaN')],
@@ -109,6 +110,7 @@ const mileSplitMetersMatchers: Matcher<number>[] = [
   ['Mile', 1609.344],
   ['Marathon', 42195],
   ['HalfMar', 21097.5],
+  
 ]
 
 export class MileSplitTime extends ServiceTime {

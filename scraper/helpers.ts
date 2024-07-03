@@ -1,6 +1,10 @@
 // export type TODO = any
 
 export function parseTime(timeString: string) {
+  if (typeof timeString !== 'string') {
+    console.error(`Don't know how to parse this time: ${timeString}`)
+    return null
+  }
   const parts = timeString.split(':')
   if (parts.length > 3 || timeString.includes('-')) {
     console.error(`Don't know how to parse this time: ${timeString}`)
