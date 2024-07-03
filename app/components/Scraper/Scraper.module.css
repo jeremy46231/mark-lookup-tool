@@ -104,18 +104,36 @@
 /* TODO: tweak this breakpoint */
 @container scraper (width < 40rem) {
   .timesTable {
-    /* background-color: red; */
+    grid-template-columns: 1fr;
     overflow: unset;
     white-space: normal;
+  }
 
-    & div {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      
-      & span:nth-child(1) {
-        width: 100%;
-        /* background-color: blue; */
+  div.header {
+    display: flex;
+    justify-content: space-between;
+
+  }
+
+  div.row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0;
+    gap: 0;
+
+    & span {
+      padding: 0.5rem;
+
+      &:nth-child(1) {
+        flex-basis: 100%;
+      }
+      &:nth-child(2) {
+        width: 50%;
+      }
+      &:nth-child(3),
+      &:nth-child(4) {
+        width: 25%;
       }
     }
   }
