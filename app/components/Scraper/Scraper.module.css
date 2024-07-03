@@ -4,7 +4,9 @@
   align-items: stretch;
 
   margin: 1rem;
-  width: fit-content;
+  /* width: 100%; */
+
+  container: scraper / inline-size;
 }
 
 .search,
@@ -54,6 +56,8 @@
 .timesTable {
   display: grid;
   grid-template-columns: 3.5fr 1fr 1fr 1fr;
+  /* grid-auto-columns: auto; */
+  overflow: scroll;
   white-space: nowrap;
 
   & div {
@@ -95,4 +99,24 @@
   width: 1rem;
   height: 1rem;
   margin-left: 0.5rem;
+}
+
+/* TODO: tweak this breakpoint */
+@container scraper (width < 40rem) {
+  .timesTable {
+    /* background-color: red; */
+    overflow: unset;
+    white-space: normal;
+
+    & div {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      
+      & span:nth-child(1) {
+        width: 100%;
+        /* background-color: blue; */
+      }
+    }
+  }
 }
