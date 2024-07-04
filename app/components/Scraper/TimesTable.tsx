@@ -6,6 +6,7 @@ import {
   getSortedRowModel,
   useReactTable,
   CoreHeader,
+  getFilteredRowModel,
 } from '@tanstack/react-table'
 import type { tableData } from './Scraper'
 import styles from './Scraper.module.css'
@@ -92,15 +93,14 @@ export function TimesTable({ data }: { data: tableData[] }) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
   })
 
   return (
     <div className={styles.timesTable}>
       <div className={styles.header}>
         {table.getFlatHeaders().map((header) => (
-          <span key={header.id} className={styles.headerItem}>
-            <Header header={header} />
-          </span>
+          <Header header={header} />
         ))}
       </div>
 
@@ -122,10 +122,18 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
   const sort = header.column.getIsSorted()
 
   return (
-    <button onClick={() => header.column.toggleSorting()}>
-      {label}
-      <SortIcon sort={sort} />
-    </button>
+    <span key={header.id} className={styles.headerItem}>
+      <button onClick={() => header.column.toggleSorting()}>
+        <span>{label}</span>
+        <SortIcon sort={sort} />
+      </button>
+      <input
+        type="text"
+        onChange={(e) => {
+          header.column.setFilterValue(e.target.value)
+        }}
+      ></input>
+    </span>
   )
 }
 
