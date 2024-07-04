@@ -4,7 +4,7 @@ import { use, useId, useMemo, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import styles from './Scraper.module.css'
 import { runScraper, type passedData } from './runScraper'
-import { TimesTable } from './TimesTable'
+import { TimesTable } from '../TimesTable/TimesTable'
 
 export function Scraper() {
   const [query, setQuery] = useState('Dathan Ritzenhein')
