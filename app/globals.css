@@ -1,3 +1,16 @@
+/* Browsers don't use a pointer cursor on buttons by default, imo they should */
+button,
+input[type='button'],
+input[type='reset'],
+input[type='submit'] {
+  cursor: pointer;
+}
+
+/* Chrome puts an arrow in input elements with a datalist, but it is too low down, so raise it */
+input[list]::-webkit-calendar-picker-indicator {
+  margin-top: -8px;
+}
+
 /* based on https://www.joshwcomeau.com/css/custom-css-reset/ */
 *,
 *::before,
@@ -37,12 +50,4 @@ h6 {
 #root,
 #__next {
   isolation: isolate;
-}
-
-/* Browsers don't use a pointer cursor on buttons by default, imo they should */
-button,
-input[type='button'],
-input[type='reset'],
-input[type='submit'] {
-  cursor: pointer;
 }

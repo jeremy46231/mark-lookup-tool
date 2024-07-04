@@ -14,7 +14,7 @@ import {
 import type { tableData } from './Scraper'
 import styles from './Scraper.module.css'
 import { Temporal } from 'temporal-polyfill'
-import { useId, useMemo } from 'react'
+import React, { useId, useMemo } from 'react'
 
 function formatTime(time: Temporal.Duration) {
   const rounded = Temporal.Duration.from(time).round({ largestUnit: 'hour' })
@@ -37,6 +37,7 @@ const columnHelper = createColumnHelper<tableData>()
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     filterInputType?: 'text' | 'datalist' | 'date' | 'none'
+    filterInputProps?: React.InputHTMLAttributes<HTMLInputElement>
   }
 }
 
@@ -47,6 +48,9 @@ const columns = [
     sortUndefined: 'last',
     meta: {
       filterInputType: 'text',
+      filterInputProps: {
+        size: 10,
+      },
     },
   }),
   columnHelper.accessor('date', {
@@ -65,8 +69,13 @@ const columns = [
       return Temporal.PlainDate.compare(a, b)
     },
     sortUndefined: 'last',
+    filterFn: (row, _columnId, filterValue: Temporal.PlainDate) => {
+      const date = row.original.date
+      if (!date) return false
+      return filterValue.equals(date)
+    },
     meta: {
-      filterInputType: 'none', // 'date', // TODO: date input
+      filterInputType: 'date',
     },
   }),
   columnHelper.accessor('event', {
@@ -87,6 +96,9 @@ const columns = [
     sortUndefined: 'last',
     meta: {
       filterInputType: 'datalist',
+      filterInputProps: {
+        size: 5,
+      },
     },
   }),
   columnHelper.accessor('time', {
@@ -124,7 +136,7 @@ export function TimesTable({ data }: { data: tableData[] }) {
     <div className={styles.timesTable}>
       <div className={styles.header}>
         {table.getFlatHeaders().map((header) => (
-          <Header header={header} />
+          <Header header={header} key={header.id} />
         ))}
       </div>
 
@@ -141,13 +153,19 @@ export function TimesTable({ data }: { data: tableData[] }) {
   )
 }
 
-function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
+function Header({
+  header,
+  props,
+}: {
+  header: CoreHeader<tableData, unknown>
+  props?: Record<string, unknown>
+}) {
   const label = flexRender(header.column.columnDef.header, header.getContext())
   const sort = header.column.getIsSorted()
 
   const filterInputType =
     header.column.columnDef.meta?.filterInputType ?? 'none'
-
+  const filterInputProps = header.column.columnDef.meta?.filterInputProps ?? {}
   const datalistId = useId()
 
   let filterInput = null
@@ -160,7 +178,8 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
             header.column.setFilterValue(e.target.value)
           }}
           placeholder="Filter"
-          aria-label={`filter "${String(label).toLocaleLowerCase()}"`}
+          aria-label={`filter ${String(label).toLocaleLowerCase()} column`}
+          {...filterInputProps}
         ></input>
       )
       break
@@ -168,7 +187,11 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
       filterInput = (
         <>
           <datalist id={datalistId}>
-            {[...(header.column.getFacetedUniqueValues() as Map<string, number>).keys()].map((value) => (
+            {[
+              ...(
+                header.column.getFacetedUniqueValues() as Map<string, number>
+              ).keys(),
+            ].map((value) => (
               <option key={value} value={value}></option>
             ))}
           </datalist>
@@ -178,7 +201,8 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
               header.column.setFilterValue(e.target.value)
             }}
             placeholder="Filter"
-            aria-label={`filter "${String(label).toLocaleLowerCase()}"`}
+            aria-label={`filter ${String(label).toLocaleLowerCase()} column`}
+            {...filterInputProps}
           ></input>
         </>
       )
@@ -188,10 +212,15 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
         <input
           type="date"
           onChange={(e) => {
-            header.column.setFilterValue(e.target.value)
+            if (!e.target.value) {
+              header.column.setFilterValue(undefined)
+              return
+            }
+            const date = Temporal.PlainDate.from(e.target.value)
+            header.column.setFilterValue(date)
           }}
-          placeholder="Filter"
-          aria-label={`filter "${String(label).toLocaleLowerCase()}"`}
+          aria-label={`filter ${String(label).toLocaleLowerCase()} column`}
+          {...filterInputProps}
         ></input>
       )
       break
@@ -201,7 +230,7 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
   }
 
   return (
-    <span key={header.id} className={styles.headerItem}>
+    <span className={styles.headerItem} {...props}>
       <button onClick={() => header.column.toggleSorting()}>
         <span>{label}</span>
         <SortIcon sort={sort} />
