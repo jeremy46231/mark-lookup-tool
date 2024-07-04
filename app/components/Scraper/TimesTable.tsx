@@ -7,10 +7,14 @@ import {
   useReactTable,
   CoreHeader,
   getFilteredRowModel,
+  type RowData,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
 } from '@tanstack/react-table'
 import type { tableData } from './Scraper'
 import styles from './Scraper.module.css'
 import { Temporal } from 'temporal-polyfill'
+import { useId, useMemo } from 'react'
 
 function formatTime(time: Temporal.Duration) {
   const rounded = Temporal.Duration.from(time).round({ largestUnit: 'hour' })
@@ -30,11 +34,20 @@ function formatTime(time: Temporal.Duration) {
 
 const columnHelper = createColumnHelper<tableData>()
 
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    filterInputType?: 'text' | 'datalist' | 'date' | 'none'
+  }
+}
+
 const columns = [
   columnHelper.accessor('meet', {
     header: 'Meet',
     sortingFn: 'alphanumeric',
     sortUndefined: 'last',
+    meta: {
+      filterInputType: 'text',
+    },
   }),
   columnHelper.accessor('date', {
     header: 'Date',
@@ -52,6 +65,9 @@ const columns = [
       return Temporal.PlainDate.compare(a, b)
     },
     sortUndefined: 'last',
+    meta: {
+      filterInputType: 'none', // 'date', // TODO: date input
+    },
   }),
   columnHelper.accessor('event', {
     header: 'Event',
@@ -69,6 +85,9 @@ const columns = [
       return eventA.localeCompare(eventB, 'en-US-u-kn')
     },
     sortUndefined: 'last',
+    meta: {
+      filterInputType: 'datalist',
+    },
   }),
   columnHelper.accessor('time', {
     header: 'Time',
@@ -84,6 +103,9 @@ const columns = [
       return Temporal.Duration.compare(a, b)
     },
     sortUndefined: 'last',
+    meta: {
+      filterInputType: 'none', // TODO: time input
+    },
   }),
 ]
 
@@ -94,6 +116,8 @@ export function TimesTable({ data }: { data: tableData[] }) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
   return (
@@ -121,18 +145,68 @@ function Header({ header }: { header: CoreHeader<tableData, unknown> }) {
   const label = flexRender(header.column.columnDef.header, header.getContext())
   const sort = header.column.getIsSorted()
 
+  const filterInputType =
+    header.column.columnDef.meta?.filterInputType ?? 'none'
+
+  const datalistId = useId()
+
+  let filterInput = null
+  switch (filterInputType) {
+    case 'text':
+      filterInput = (
+        <input
+          type="text"
+          onChange={(e) => {
+            header.column.setFilterValue(e.target.value)
+          }}
+          placeholder="Filter"
+          aria-label={`filter "${String(label).toLocaleLowerCase()}"`}
+        ></input>
+      )
+      break
+    case 'datalist':
+      filterInput = (
+        <>
+          <datalist id={datalistId}>
+            {[...(header.column.getFacetedUniqueValues() as Map<string, number>).keys()].map((value) => (
+              <option key={value} value={value}></option>
+            ))}
+          </datalist>
+          <input
+            list={datalistId}
+            onChange={(e) => {
+              header.column.setFilterValue(e.target.value)
+            }}
+            placeholder="Filter"
+            aria-label={`filter "${String(label).toLocaleLowerCase()}"`}
+          ></input>
+        </>
+      )
+      break
+    case 'date':
+      filterInput = (
+        <input
+          type="date"
+          onChange={(e) => {
+            header.column.setFilterValue(e.target.value)
+          }}
+          placeholder="Filter"
+          aria-label={`filter "${String(label).toLocaleLowerCase()}"`}
+        ></input>
+      )
+      break
+    case 'none':
+      filterInput = null
+      break
+  }
+
   return (
     <span key={header.id} className={styles.headerItem}>
       <button onClick={() => header.column.toggleSorting()}>
         <span>{label}</span>
         <SortIcon sort={sort} />
       </button>
-      <input
-        type="text"
-        onChange={(e) => {
-          header.column.setFilterValue(e.target.value)
-        }}
-      ></input>
+      {filterInput}
     </span>
   )
 }
