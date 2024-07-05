@@ -1,10 +1,9 @@
 'use client'
 
-import { use, useId, useMemo, useState } from 'react'
-import { Temporal } from 'temporal-polyfill'
+import { useId, useState } from 'react'
 import styles from './Scraper.module.css'
 import { runScraper, type passedData } from './runScraper'
-import { TimesTable } from '../TimesTable/TimesTable'
+import { DataView } from '@/app/components/DataView/DataView'
 
 export function Scraper() {
   const [query, setQuery] = useState('Dathan Ritzenhein')
@@ -33,44 +32,6 @@ export function Scraper() {
         <button type="submit">Load</button>
       </form>
       {data && <DataView data={data} />}
-    </div>
-  )
-}
-
-const makeTableData = (data: passedData) =>
-  data.times.map((time) => {
-    return {
-      meet: time.meet ?? undefined,
-      date: time.date ? Temporal.PlainDate.from(time.date) : undefined,
-      event: time.event ?? undefined,
-      meters: time.meters ?? undefined,
-      time: time.time
-        ? Temporal.Duration.from({
-            milliseconds: Math.round(time.time * 1000),
-          }).round({
-            largestUnit: 'hour',
-          })
-        : undefined,
-    }
-  })
-export type tableData = ReturnType<typeof makeTableData>[number]
-
-function DataView({ data }: { data: passedData }) {
-  const tableData = useMemo(() => makeTableData(data), [data])
-
-  return (
-    <div className={styles.dataView}>
-      <div className={styles.name}>
-        {data.pfpUrl && (
-          <span className={styles.pfp}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={data.pfpUrl} alt={`${data.name}'s profile picture`} />
-          </span>
-        )}
-        {data.name ?? ''}
-      </div>
-
-      <TimesTable data={tableData} />
     </div>
   )
 }

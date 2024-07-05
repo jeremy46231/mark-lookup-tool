@@ -9,14 +9,11 @@
   container: scraper / inline-size;
 }
 
-.search,
-.dataView {
+.search {
   border: 1px solid #aaa;
   border-radius: 5px;
   margin-bottom: 1rem;
-}
 
-.search {
   padding: 0.5rem;
   display: flex;
   flex-direction: row;
@@ -24,31 +21,5 @@
   gap: 0.5rem;
   & input {
     flex-grow: 1;
-  }
-}
-
-.name {
-  padding: 0.5rem;
-
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-
-  font-size: 1.5rem;
-}
-
-.pfp {
-  display: inline-block;
-  width: 3rem;
-  height: 3rem;
-  & img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
   }
 }

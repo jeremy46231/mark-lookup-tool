@@ -14,7 +14,7 @@ import {
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
 } from '@tanstack/react-table'
-import type { tableData } from '@/app/components/Scraper/Scraper'
+import type { tableData } from '@/app/components/DataView/DataView'
 import styles from './TimesTable.module.css'
 import { Temporal } from 'temporal-polyfill'
 import React, { useId, useMemo } from 'react'
@@ -213,7 +213,9 @@ function FilterInput({
         ></input>
       )
     case 'none':
+      return null
     default:
+      console.error(`Unknown filter input type: ${filterInputType}`)
       return null
   }
 }

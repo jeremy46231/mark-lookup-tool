@@ -1,5 +1,5 @@
 import { createColumnHelper, RowData } from '@tanstack/react-table'
-import { tableData } from '@/app/components/Scraper/Scraper'
+import { tableData } from '@/app/components/DataView/DataView'
 import { formatTime } from '../../helpers'
 import { Temporal } from 'temporal-polyfill'
 
