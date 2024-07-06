@@ -1,5 +1,5 @@
 import { Temporal } from 'temporal-polyfill'
-import type { tableData } from './components/Scraper/Scraper'
+import type { tableData } from './components/DataView/DataView'
 import type { Column } from '@tanstack/react-table'
 
 export function formatTime(time: Temporal.Duration) {

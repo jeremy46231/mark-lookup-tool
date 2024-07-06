@@ -1,13 +1,8 @@
 'use server'
 
-import { AthleticNetTime } from '@/scraper/athleticnet'
-import { MileSplitTime } from '@/scraper/milesplit'
-import { Scraper } from '@/scraper/scraper'
+import { Athlete, services, servicesMap } from '@/scraper/scraper'
 
-const scraper = new Scraper()
-
-export async function runScraper(query: string) {
-  const athlete = await scraper.findAthlete(query)
+function getPassedData(athlete: Athlete) {
   const data = {
     name: athlete.fullName,
     pfpUrl: athlete.pfpUrl,
@@ -21,9 +16,47 @@ export async function runScraper(query: string) {
     })),
   }
 
-  console.log(athlete.urls.join('\n'))
+  return data
+}
+export type passedData = ReturnType<typeof getPassedData>
 
+// export async function runScraper(query: string) {
+//   const athlete = await scraper.findAthlete(query)
+//   const data = getPassedData(athlete)
+
+//   return data
+// }
+
+export async function searchSources(query: string) {
+  const results = 
+    await Promise.all(
+      [...servicesMap.values()].map(async (serviceInfo) => {
+        const service = new serviceInfo.constructor()
+        const searchResults = await service.search(query)
+        return {
+          serviceId: service.service,
+          searchResults,
+          displayName: serviceInfo.displayName,
+        }
+      })
+    )
+  
+  return results
+}
+export type searchResults = Awaited<ReturnType<typeof searchSources>>
+
+export async function getAthletes(ids: [id: string, service: string][]) {
+  const sources = await Promise.all(
+    ids.map(async ([id, serviceId]) => {
+      const serviceInfo = servicesMap.get(serviceId)
+      if (!serviceInfo) throw new Error(`Service ${serviceId} not found`)
+      const service = new serviceInfo.constructor()
+      const source = await service.getAthlete(id)
+      return source
+    })
+  )
+  const athlete = new Athlete(sources)
+  const data = getPassedData(athlete)
   return data
 }
 
-export type passedData = Awaited<ReturnType<typeof runScraper>>

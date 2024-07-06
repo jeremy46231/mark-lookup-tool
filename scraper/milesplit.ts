@@ -8,6 +8,8 @@ import {
 } from './apiTypes'
 
 export class MileSplit extends Service {
+  readonly service = 'MileSplit' as const
+
   async _search(query: string) {
     const response = await fetch(
       `https://www.milesplit.com/api/v1/athletes/search?q=${encodeURIComponent(
@@ -32,6 +34,11 @@ export class MileSplit extends Service {
     const searchResults = await this.search(query)
     const topResult = searchResults[0]
     const athlete = new MileSplitAthlete(topResult.id)
+    await athlete.load()
+    return athlete
+  }
+  async getAthlete(id: string) {
+    const athlete = new MileSplitAthlete(id)
     await athlete.load()
     return athlete
   }

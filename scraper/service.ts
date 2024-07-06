@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill'
 import { parseTime } from './helpers'
 
-type SearchResult = {
+export type searchResult = {
   id: string
   name: string
   school: string
@@ -11,9 +11,11 @@ type SearchResult = {
 }
 
 export abstract class Service {
-  abstract search(query: string): Promise<SearchResult[]>
+  abstract service: string
 
+  abstract search(query: string): Promise<searchResult[]>
   abstract findAthlete(query: string): Promise<ServiceAthlete>
+  abstract getAthlete(id: string): Promise<ServiceAthlete>
 }
 
 export abstract class ServiceAthlete {

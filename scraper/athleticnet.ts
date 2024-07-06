@@ -8,6 +8,8 @@ import {
 } from './apiTypes'
 
 export class AthleticNet extends Service {
+  readonly service = 'Athletic.net' as const
+
   async _search(query: string) {
     const response = await fetch(
       `https://www.athletic.net/api/v1/AutoComplete/search?q=${encodeURIComponent(
@@ -40,10 +42,15 @@ export class AthleticNet extends Service {
     await athlete.load()
     return athlete
   }
+  async getAthlete(id: string) {
+    const athlete = new AthleticNetAthlete(id)
+    await athlete.load()
+    return athlete
+  }
 }
 
 export class AthleticNetAthlete extends ServiceAthlete {
-  service = 'Athletic.net'
+  readonly service = 'Athletic.net' as const
 
   _info: AthleticNetAPIXCAthlete['athlete'] | null = null
   _xcMeets: AthleticNetAPIXCAthlete['meets'] | null = null
@@ -154,7 +161,7 @@ const athleticNetMetersMatchers: Matcher<number>[] = [
 ]
 
 export class AthleticNetTime extends ServiceTime {
-  service = 'Athletic.net'
+  readonly service = 'Athletic.net' as const
 
   _data:
     | AthleticNetAPITFAthlete['resultsTF'][0]
