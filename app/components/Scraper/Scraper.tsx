@@ -82,6 +82,7 @@ export function Scraper() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            size={10}
           />
           <button type="submit">Search</button>
         </form>

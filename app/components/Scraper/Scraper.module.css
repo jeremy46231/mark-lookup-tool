@@ -3,8 +3,8 @@
   flex-direction: column;
   align-items: stretch;
 
-  margin: 1rem;
-  /* width: 100%; */
+  margin: 0 auto;
+  max-width: 65rem;
 
   container: scraper / inline-size;
 }
