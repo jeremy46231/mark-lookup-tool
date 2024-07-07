@@ -36,3 +36,16 @@ export function getMinMaxDates(column: Column<tableData, Temporal.PlainDate>) {
   }
   return [min, max]
 }
+
+export function debounce<A extends unknown[]>(
+  callback: (...args: A[]) => void,
+  waitMs: number
+) {
+  let timeoutId: null | number = null
+  return (...args: A[]) => {
+    window.clearTimeout(timeoutId ?? undefined)
+    timeoutId = window.setTimeout(() => {
+      callback.apply(null, args)
+    }, waitMs)
+  }
+}

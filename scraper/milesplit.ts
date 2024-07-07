@@ -27,6 +27,7 @@ export class MileSplit extends Service {
       school: result.schoolName,
       city: result.city,
       state: result.state,
+      url: `https://www.milesplit.com/athletes/${result.id}`,
       service: 'MileSplit',
     }))
   }

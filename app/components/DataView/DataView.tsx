@@ -36,18 +36,6 @@ export function DataView({ data }: { data: passedData }) {
         )}
         {data.name ?? ''}
       </div>
-      <div className={styles.links}>
-        {data.urls.map((url) => (
-          <a
-            key={url}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {url}
-          </a>
-        ))}
-      </div>
 
       <TimesTable data={tableData} />
     </div>

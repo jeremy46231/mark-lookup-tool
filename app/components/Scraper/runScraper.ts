@@ -57,6 +57,7 @@ export async function getAthletes(ids: [id: string, service: string][]) {
   )
   const athlete = new Athlete(sources)
   const data = getPassedData(athlete)
+  console.log(data.times.length, 'times found for', data.name)
   return data
 }
 
