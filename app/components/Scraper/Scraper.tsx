@@ -2,8 +2,13 @@
 
 import { useId, useState } from 'react'
 import styles from './Scraper.module.css'
-import { searchSources, type passedData, type searchResults } from './runScraper'
+import {
+  searchSources,
+  type passedData,
+  type searchResults,
+} from './runScraper'
 import { DataView } from '@/app/components/DataView/DataView'
+import { SearchResults } from '../SearchResults/SearchResults'
 
 export function Scraper() {
   const [query, setQuery] = useState('Dathan Ritzenhein')
@@ -24,23 +29,19 @@ export function Scraper() {
 
   return (
     <div className={styles.scraper}>
-      <form className={styles.search} onSubmit={search}>
-        <label htmlFor={searchInputID}>Search: </label>
-        <input
-          id={searchInputID}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button type="submit">Search</button>
-      </form>
-      {searchResults && (
-        <>
-          {searchResults.map(service => (
-            <></> // TODO: Implement this
-          ))}
-        </>
-      )}
+      <div className={styles.search}>
+        <form className={styles.query} onSubmit={search}>
+          <label htmlFor={searchInputID}>Search: </label>
+          <input
+            id={searchInputID}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button type="submit">Search</button>
+        </form>
+        {searchResults && <SearchResults results={searchResults} />}
+      </div>
 
       {data && <DataView data={data} />}
     </div>

@@ -7,6 +7,7 @@ export type searchResult = {
   school: string
   city: string
   state: string
+  url: string
   service: string
 }
 

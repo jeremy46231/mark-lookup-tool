@@ -6,6 +6,7 @@ import {
   AthleticNetAPITFAthlete,
   AthleticNetAPIXCAthlete,
 } from './apiTypes'
+import { url } from 'inspector'
 
 export class AthleticNet extends Service {
   readonly service = 'Athletic.net' as const
@@ -25,12 +26,14 @@ export class AthleticNet extends Service {
     return rawResults.map((result) => {
       const [_match, school, _schoolType, city, state] =
         result.subtext.match(subtextRegex) || []
+      const defaultSport = result.xc ? 'cross-country' : 'track-and-field'
       return {
         id: result.id_db,
         name: result.textsuggest,
         school,
         city,
         state,
+        url: `https://www.athletic.net/athlete/${result.id_db}/${defaultSport}`,
         service: 'Athletic.net',
       }
     })

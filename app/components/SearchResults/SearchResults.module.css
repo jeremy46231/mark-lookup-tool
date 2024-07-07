@@ -1,0 +1,47 @@
+.results {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .resultSet {
+    flex: 1;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    padding: 0.5rem;
+  
+    max-height: 20rem;
+    overflow-y: auto;
+  }
+  
+  .resultList {
+    list-style-type: none;
+    padding: 0;
+  
+    & li {
+      margin-bottom: 0.5rem;
+      &:last-child {
+        margin-bottom: 0;
+      }
+  
+      & label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 1rem;
+      }
+    }
+  }
+  
+  .resultLink {
+    margin-left: auto;
+    padding: 0.5rem;
+  }
+  
+  .resultLinkIcon {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+  }
+  
