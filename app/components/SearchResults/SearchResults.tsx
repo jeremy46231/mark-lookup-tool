@@ -1,9 +1,7 @@
 import type { searchResults } from '@/app/components/Scraper/runScraper'
 import type { searchResult } from '@/scraper/service'
 import styles from './SearchResults.module.css'
-import { useState } from 'react'
-
-type serviceResults = searchResults[number]
+// import { useState } from 'react'
 
 export type selectedResults = {
   serviceId: string
@@ -11,11 +9,11 @@ export type selectedResults = {
 }[]
 
 export function SearchResults({
-  results,
+  searchResults,
   selectedResults,
   setSelectedResults,
 }: {
-  results: searchResults
+  searchResults: searchResults
   selectedResults: selectedResults
   setSelectedResults: (results: selectedResults) => void
 }) {
@@ -28,26 +26,70 @@ export function SearchResults({
   )
   */
 
+  const serviceIds = new Set([
+    ...searchResults.map((service) => service.serviceId),
+    ...selectedResults.map((result) => result.serviceId),
+  ])
+
+  const displayedResults = [...serviceIds].map((serviceId) => {
+    const thisSearchResults =
+      searchResults.find((service) => service.serviceId === serviceId)
+        ?.searchResults ?? []
+    const thisSelectedResults =
+      selectedResults.find((result) => result.serviceId === serviceId)
+        ?.results ?? []
+
+    const selectedOnlyResults = thisSelectedResults.filter(
+      (result) => !thisSearchResults.some((result) => result.id === result.id)
+    )
+    const selectedResultIds = new Set(
+      thisSelectedResults.map((result) => result.id)
+    )
+    return {
+      serviceId,
+      results: [...selectedOnlyResults, ...thisSearchResults],
+      selectedResultIds,
+    }
+  })
+
   return (
     <form className={styles.results}>
-      {results.map((service) => (
+      {displayedResults.map((service) => (
         <ResultSet
           key={service.serviceId}
-          service={service}
-          selectedOptions={
-            selectedResults.find(
-              (result) => result.serviceId === service.serviceId
-            )!.results
-          }
-          setSelectedOptions={(results) =>
-            setSelectedResults(
-              selectedResults.map((result) =>
-                result.serviceId === service.serviceId
-                  ? { ...result, results }
-                  : result
-              )
-            )
-          }
+          serviceId={service.serviceId}
+          results={service.results}
+          selectedResultIds={service.selectedResultIds}
+          selectResult={(resultId) => {
+            const newResults = selectedResults.map((result) => {
+              if (result.serviceId === service.serviceId) {
+                const newResult = service.results.find(
+                  (result) => result.id === resultId
+                )
+                if (!newResult) throw new Error(`Result not found: ${resultId}`)
+                return {
+                  serviceId: result.serviceId,
+                  results: [...result.results, newResult],
+                }
+              }
+              return result
+            })
+            setSelectedResults(newResults)
+          }}
+          deselectResult={(resultId) => {
+            const newResults = selectedResults.map((result) => {
+              if (result.serviceId === service.serviceId) {
+                return {
+                  serviceId: result.serviceId,
+                  results: result.results.filter(
+                    (result) => result.id !== resultId
+                  ),
+                }
+              }
+              return result
+            })
+            setSelectedResults(newResults)
+          }}
         />
       ))}
     </form>
@@ -55,60 +97,59 @@ export function SearchResults({
 }
 
 function ResultSet({
-  service,
-  selectedOptions,
-  setSelectedOptions,
+  serviceId,
+  results,
+  selectedResultIds,
+  selectResult,
+  deselectResult,
 }: {
-  service: serviceResults
-  selectedOptions: searchResult[]
-  setSelectedOptions: (results: searchResult[]) => void
+  serviceId: string
+  results: searchResult[]
+  selectedResultIds: Set<string>
+  selectResult: (resultId: string) => void
+  deselectResult: (resultId: string) => void
 }) {
-
-  const checkedIds = new Set(selectedOptions.map((result) => result.id))
-  const selectedOnly = selectedOptions.filter(
-    (result) => !service.searchResults.some((result) => result.id === result.id)
-  )
-  const allResults = [...selectedOnly, ...service.searchResults]
-
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const id = e.target.getAttribute('data-id')
     if (!id) return
     if (e.target.checked) {
       console.log('checked', id)
-      setSelectedOptions([
-        ...selectedOptions,
-        service.searchResults.find((result) => result.id === id)!,
-      ])
+      selectResult(id)
     } else {
       console.log('unchecked', id)
-      setSelectedOptions(selectedOptions.filter((result) => result.id !== id))
+      deselectResult(id)
     }
   }
 
   return (
-    <fieldset key={service.serviceId} className={styles.resultSet}>
-      <legend>{service.displayName}</legend>
+    <fieldset className={styles.resultSet}>
+      <legend>{serviceId}</legend>
       <ul className={styles.resultList}>
-        {allResults.map((result) => (
+        {results.map((result) => (
           <li key={result.id}>
             <label>
               <input
                 type="checkbox"
                 data-id={result.id}
-                checked={checkedIds.has(result.id)}
+                checked={selectedResultIds.has(result.id)}
                 onChange={handleCheckboxChange}
               />
               <div>
-                <div>{result.name}</div>
+                <div className={styles.noWrap}>{result.name}</div>
                 <div>
-                  {result.school && <>{result.school}, </>}
-                  {result.city}, {result.state}
+                  {result.school && (
+                    <>
+                      <span className={styles.noWrap}>{result.school}</span>,{' '}
+                    </>
+                  )}
+                  <span className={styles.noWrap}>{result.city}</span>,{' '}
+                  <span className={styles.noWrap}>{result.state}</span>
                 </div>
               </div>
               <a
                 className={styles.resultLink}
                 href={result.url}
-                target={`athlete-${service.serviceId}-${result.id}`}
+                target={`athlete-${serviceId}-${result.id}`}
               >
                 <svg
                   className={styles.resultLinkIcon}

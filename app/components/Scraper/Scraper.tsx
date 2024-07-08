@@ -88,7 +88,7 @@ export function Scraper() {
         </form>
         {selectedResults && (
           <SearchResults
-            results={searchResults ?? [] /* TODO: This default array does not work properly */}
+            searchResults={searchResults ?? [] /* TODO: This default array does not work properly */}
             selectedResults={selectedResults}
             setSelectedResults={handleSetSelectedResults}
           />
