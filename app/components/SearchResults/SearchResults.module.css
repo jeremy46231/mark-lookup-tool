@@ -11,7 +11,6 @@
   border-radius: 5px;
   padding: 0.5rem;
 
-  max-height: 20rem;
   overflow-y: auto;
 }
 
@@ -43,8 +42,4 @@
 .resultLinkIcon {
   min-width: 1.5rem;
   min-height: 1.5rem;
-}
-
-.noWrap {
-  white-space: nowrap;
 }

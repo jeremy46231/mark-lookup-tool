@@ -9,6 +9,12 @@ export type selectedResults = {
   results: searchResult[]
 }[]
 
+type resultSetData = {
+  serviceId: string
+  selectedResults: searchResult[]
+  searchOnlyResults: searchResult[]
+}
+
 export function SearchResults({
   searchResults,
   selectedResults,
@@ -32,7 +38,7 @@ export function SearchResults({
     ...selectedResults.map((result) => result.serviceId),
   ])
 
-  const displayedResults = [...serviceIds].map((serviceId) => {
+  const displayedResults: resultSetData[] = [...serviceIds].map((serviceId) => {
     const thisSearchResults =
       searchResults.find((service) => service.serviceId === serviceId)
         ?.searchResults ?? []
@@ -40,17 +46,14 @@ export function SearchResults({
       selectedResults.find((result) => result.serviceId === serviceId)
         ?.results ?? []
 
-    const selectedOnlyResults = thisSelectedResults.filter(
+    const searchOnlyResults = thisSearchResults.filter(
       (result) =>
-        !thisSearchResults.some((otherResult) => result.id === otherResult.id)
-    )
-    const selectedResultIds = new Set(
-      thisSelectedResults.map((result) => result.id)
+        !thisSelectedResults.some((otherResult) => result.id === otherResult.id)
     )
     return {
       serviceId,
-      results: [...selectedOnlyResults, ...thisSearchResults],
-      selectedResultIds,
+      selectedResults: thisSelectedResults,
+      searchOnlyResults,
     }
   })
 
@@ -59,37 +62,41 @@ export function SearchResults({
       {displayedResults.map((service) => (
         <ResultSet
           key={service.serviceId}
-          serviceId={service.serviceId}
-          results={service.results}
-          selectedResultIds={service.selectedResultIds}
-          selectResult={(resultId) => {
+          data={service}
+          selectResult={(result) => {
             setSelectedResults(
               produce(selectedResults, (draft) => {
                 let targetService = draft.find(
-                  (result) => result.serviceId === service.serviceId
+                  (s) => s.serviceId === service.serviceId
                 )
                 if (!targetService) {
                   targetService = { serviceId: service.serviceId, results: [] }
                   draft.push(targetService)
                 }
-                const newResult = service.results.find(
-                  (result) => result.id === resultId
-                )
-                if (!newResult) throw new Error(`Result not found: ${resultId}`)
-                targetService.results.push(newResult)
+                if (targetService.results.some((r) => r.id === result.id))
+                  return
+                targetService.results.push(result)
               })
             )
           }}
-          deselectResult={(resultId) => {
+          deselectResult={(result) => {
             setSelectedResults(
               produce(selectedResults, (draft) => {
                 const targetService = draft.find(
-                  (result) => result.serviceId === service.serviceId
+                  (r) => r.serviceId === service.serviceId
                 )
                 if (!targetService) return
                 targetService.results = targetService.results.filter(
-                  (result) => result.id !== resultId
+                  (r) => r.id !== result.id
                 )
+                if (targetService.results.length === 0) {
+                  draft.splice(
+                    draft.findIndex(
+                      (result) => result.serviceId === service.serviceId
+                    ),
+                    1
+                  )
+                }
               })
             )
           }}
@@ -100,76 +107,124 @@ export function SearchResults({
 }
 
 function ResultSet({
-  serviceId,
-  results,
-  selectedResultIds,
+  data: { serviceId, selectedResults, searchOnlyResults },
   selectResult,
   deselectResult,
 }: {
-  serviceId: string
+  data: resultSetData
+  selectResult: (result: searchResult) => void
+  deselectResult: (result: searchResult) => void
+}) {
+  return (
+    <fieldset className={styles.resultSet}>
+      <legend>{serviceId}</legend>
+      <ResultList
+        results={selectedResults}
+        serviceId={serviceId}
+        checked={true}
+        selectResult={selectResult}
+        deselectResult={deselectResult}
+      />
+      <details>
+        <summary>Search results</summary>
+        <ResultList
+          results={searchOnlyResults}
+          serviceId={serviceId}
+          checked={false}
+          selectResult={selectResult}
+          deselectResult={deselectResult}
+        />
+      </details>
+    </fieldset>
+  )
+}
+
+function ResultList({
+  results,
+  serviceId,
+  checked,
+  selectResult,
+  deselectResult,
+}: {
   results: searchResult[]
-  selectedResultIds: Set<string>
-  selectResult: (resultId: string) => void
-  deselectResult: (resultId: string) => void
+  serviceId: string
+  checked: boolean
+  selectResult: (result: searchResult) => void
+  deselectResult: (result: searchResult) => void
+}) {
+  
+  return (
+    <ul className={styles.resultList}>
+      {results.map((result) => (
+        <Result
+          key={result.id}
+          result={result}
+          serviceId={serviceId}
+          checked={checked}
+          selectResult={selectResult}
+          deselectResult={deselectResult}
+        />
+      ))}
+    </ul>
+  )
+}
+
+function Result({
+  result,
+  serviceId,
+  checked,
+  selectResult,
+  deselectResult,
+}: {
+  result: searchResult
+  serviceId: string
+  checked: boolean
+  selectResult: (result: searchResult) => void
+  deselectResult: (result: searchResult) => void
 }) {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const id = e.target.getAttribute('data-id')
-    if (!id) return
     if (e.target.checked) {
-      selectResult(id)
+      selectResult(result)
     } else {
-      deselectResult(id)
+      deselectResult(result)
     }
   }
 
   return (
-    <fieldset className={styles.resultSet}>
-      <legend>{serviceId}</legend>
-      <ul className={styles.resultList}>
-        {results.map((result) => (
-          <li key={result.id}>
-            <label>
-              <input
-                type="checkbox"
-                data-id={result.id}
-                checked={selectedResultIds.has(result.id)}
-                onChange={handleCheckboxChange}
+    <li key={result.id}>
+        <label>
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={handleCheckboxChange}
+          />
+          <div>
+            <div>{result.name}</div>
+            <div>
+              {result.school && <>{result.school}, </>}
+              {result.city}, {result.state}
+            </div>
+          </div>
+          <a
+            className={styles.resultLink}
+            href={result.url}
+            target={`athlete-${serviceId}-${result.id}`}
+          >
+            <svg
+              className={styles.resultLinkIcon}
+              aria-label="result link"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke="black"
+                strokeWidth={1}
+                d="M5.333 7.997h5.334M10 5.33h1.333a2.667 2.667 0 1 1 0 5.333H10M6 5.33H4.667a2.667 2.667 0 0 0 0 5.333H6"
               />
-              <div>
-                <div className={styles.noWrap}>{result.name}</div>
-                <div>
-                  {result.school && (
-                    <>
-                      <span className={styles.noWrap}>{result.school}</span>,{' '}
-                    </>
-                  )}
-                  <span className={styles.noWrap}>{result.city}</span>,{' '}
-                  <span className={styles.noWrap}>{result.state}</span>
-                </div>
-              </div>
-              <a
-                className={styles.resultLink}
-                href={result.url}
-                target={`athlete-${serviceId}-${result.id}`}
-              >
-                <svg
-                  className={styles.resultLinkIcon}
-                  aria-label="result link"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    stroke="black"
-                    strokeWidth={1}
-                    d="M5.333 7.997h5.334M10 5.33h1.333a2.667 2.667 0 1 1 0 5.333H10M6 5.33H4.667a2.667 2.667 0 0 0 0 5.333H6"
-                  />
-                </svg>
-              </a>
-            </label>
-          </li>
-        ))}
-      </ul>
-    </fieldset>
+            </svg>
+          </a>
+        </label>
+      </li>
   )
 }

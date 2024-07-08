@@ -14,7 +14,6 @@ import {
   type selectedResults,
 } from '@/app/components/SearchResults/SearchResults'
 import { useDebounce } from '@/app/helpers'
-import { start } from 'repl'
 
 export function Scraper() {
   // State
@@ -137,6 +136,8 @@ export function Scraper() {
             value={query}
             onChange={handleQueryChange}
             size={10}
+            autoComplete='name'
+            placeholder=' ' // Fix safari alignment bug - https://bugs.webkit.org/show_bug.cgi?id=142968
           />
           {!shouldSearch ? (
             <button type="submit">Search</button>
