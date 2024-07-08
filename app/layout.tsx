@@ -6,7 +6,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Mark Lookup Tool',
-  description: 'wip',
+  description:
+    "Website to look up any runner's cross country and track & field times in a nice interface",
 }
 
 export default function RootLayout({
