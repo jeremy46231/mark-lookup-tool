@@ -1,3 +1,4 @@
+import { produce } from 'immer'
 import type { searchResults } from '@/app/components/Scraper/runScraper'
 import type { searchResult } from '@/scraper/service'
 import styles from './SearchResults.module.css'
@@ -40,7 +41,8 @@ export function SearchResults({
         ?.results ?? []
 
     const selectedOnlyResults = thisSelectedResults.filter(
-      (result) => !thisSearchResults.some((result) => result.id === result.id)
+      (result) =>
+        !thisSearchResults.some((otherResult) => result.id === otherResult.id)
     )
     const selectedResultIds = new Set(
       thisSelectedResults.map((result) => result.id)
@@ -61,34 +63,35 @@ export function SearchResults({
           results={service.results}
           selectedResultIds={service.selectedResultIds}
           selectResult={(resultId) => {
-            const newResults = selectedResults.map((result) => {
-              if (result.serviceId === service.serviceId) {
+            setSelectedResults(
+              produce(selectedResults, (draft) => {
+                let targetService = draft.find(
+                  (result) => result.serviceId === service.serviceId
+                )
+                if (!targetService) {
+                  targetService = { serviceId: service.serviceId, results: [] }
+                  draft.push(targetService)
+                }
                 const newResult = service.results.find(
                   (result) => result.id === resultId
                 )
                 if (!newResult) throw new Error(`Result not found: ${resultId}`)
-                return {
-                  serviceId: result.serviceId,
-                  results: [...result.results, newResult],
-                }
-              }
-              return result
-            })
-            setSelectedResults(newResults)
+                targetService.results.push(newResult)
+              })
+            )
           }}
           deselectResult={(resultId) => {
-            const newResults = selectedResults.map((result) => {
-              if (result.serviceId === service.serviceId) {
-                return {
-                  serviceId: result.serviceId,
-                  results: result.results.filter(
-                    (result) => result.id !== resultId
-                  ),
-                }
-              }
-              return result
-            })
-            setSelectedResults(newResults)
+            setSelectedResults(
+              produce(selectedResults, (draft) => {
+                const targetService = draft.find(
+                  (result) => result.serviceId === service.serviceId
+                )
+                if (!targetService) return
+                targetService.results = targetService.results.filter(
+                  (result) => result.id !== resultId
+                )
+              })
+            )
           }}
         />
       ))}
@@ -113,10 +116,8 @@ function ResultSet({
     const id = e.target.getAttribute('data-id')
     if (!id) return
     if (e.target.checked) {
-      console.log('checked', id)
       selectResult(id)
     } else {
-      console.log('unchecked', id)
       deselectResult(id)
     }
   }

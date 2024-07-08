@@ -17,11 +17,15 @@ import {
 import type { tableData } from '@/app/components/DataView/DataView'
 import styles from './TimesTable.module.css'
 import { Temporal } from 'temporal-polyfill'
-import React, { useId, useMemo } from 'react'
+import React, { memo, useId } from 'react'
 import { columns } from './tableDefinition'
 import { getMinMaxDates } from '@/app/helpers'
 
-export function TimesTable({ data }: { data: tableData[] }) {
+export const TimesTable = memo(function TimesTable({
+  data,
+}: {
+  data: tableData[]
+}) {
   const table = useReactTable({
     data,
     columns,
@@ -51,7 +55,7 @@ export function TimesTable({ data }: { data: tableData[] }) {
       ))}
     </div>
   )
-}
+})
 
 function Header({
   header,

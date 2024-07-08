@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import styles from './Scraper.module.css'
 import {
   getAthletes,
@@ -13,10 +13,14 @@ import {
   SearchResults,
   type selectedResults,
 } from '@/app/components/SearchResults/SearchResults'
-import { debounce } from '@/app/helpers'
+import { useDebounce } from '@/app/helpers'
+import { start } from 'repl'
 
 export function Scraper() {
-  const [query, setQuery] = useState('Dathan Ritzenhein')
+  // State
+
+  const [query, setQuery] = useState('')
+  const [shouldSearch, setShouldSearch] = useState(false)
 
   const [searchResults, setSearchResults] = useState<searchResults | null>(null)
   const [selectedResults, setSelectedResults] =
@@ -25,71 +29,127 @@ export function Scraper() {
   const [data, setData] = useState<passedData | null>(null)
   const searchInputID = useId()
 
-  const search = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!query.trim()) {
-      setSearchResults(null)
-      return
-    }
-    const results = await searchSources(query)
-    setSearchResults(results)
-    setSelectedResults(
-      (selectedResults) =>
-        selectedResults ||
-        results.map((service) => ({
-          serviceId: service.serviceId,
-          results: service.searchResults[0] ? [service.searchResults[0]] : [],
-        }))
-    )
-    load()
-    console.log(results)
-  }
+  const [startInputDebounce, waitForInputDebounce] = useDebounce()
 
-  const load = debounce(async () => {
-    if (!selectedResults) {
-      setData(null)
-      return
-    }
-    const ids = selectedResults.flatMap(({ serviceId, results }) =>
-      results.map(
-        (result) => [result.id, serviceId] as [id: string, service: string]
+  // Event handlers
+
+  const handleQueryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setQuery(e.target.value)
+      startInputDebounce(500)
+    },
+    [startInputDebounce]
+  )
+
+  const handleQuerySubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      if (query.trim() === '') return
+      setShouldSearch(true)
+      startInputDebounce(0)
+    },
+    [query, startInputDebounce]
+  )
+
+  const reset = useCallback(() => {
+    setShouldSearch(false)
+    setQuery('')
+    setSearchResults(null)
+    setSelectedResults(null)
+    setData(null)
+  }, [])
+
+  const handleSetSelectedResults = useCallback(
+    (newSelectedResults: selectedResults) => {
+      startInputDebounce(500)
+      if (newSelectedResults.every((result) => result.results.length === 0)) {
+        setSelectedResults(null)
+        return
+      }
+      setSelectedResults(newSelectedResults)
+    },
+    [startInputDebounce]
+  )
+
+  // Effects
+
+  useEffect(() => {
+    if (!shouldSearch) return
+    const controller = new AbortController()
+
+    ;(async () => {
+      await waitForInputDebounce()
+      if (controller.signal.aborted) return
+      if (!query.trim()) {
+        setSearchResults(null)
+        return
+      }
+      const results = await searchSources(query)
+      if (controller.signal.aborted) return
+      console.log('searched')
+      setSearchResults(results)
+      setSelectedResults(
+        (selectedResults) =>
+          selectedResults ||
+          results.map((service) => ({
+            serviceId: service.serviceId,
+            results: service.searchResults[0] ? [service.searchResults[0]] : [],
+          }))
       )
-    )
-    const athlete = await getAthletes(ids)
-    console.log(athlete)
-    setData(athlete)
-  }, 500)
+    })()
 
-  const handleSetSelectedResults = (newSelectedResults: selectedResults) => {
-    if (
-      searchResults === null &&
-      newSelectedResults.every((result) => result.results.length === 0)
-    ) {
-      setSelectedResults(null)
-      return
-    }
-    setSelectedResults(newSelectedResults)
-    load()
-  }
+    return () => controller.abort()
+  }, [query, shouldSearch, waitForInputDebounce])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    ;(async () => {
+      await waitForInputDebounce()
+      if (controller.signal.aborted) return
+      if (!selectedResults) {
+        setData(null)
+        return
+      }
+      const ids = selectedResults.flatMap(({ serviceId, results }) =>
+        results.map(
+          (result) => [result.id, serviceId] as [id: string, service: string]
+        )
+      )
+      const athlete = await getAthletes(ids)
+      if (controller.signal.aborted) return
+      setData(athlete)
+    })()
+
+    return () => controller.abort()
+  }, [selectedResults, waitForInputDebounce])
+
+  // Render
 
   return (
     <div className={styles.scraper}>
       <div className={styles.search}>
-        <form className={styles.query} onSubmit={search}>
+        <form className={styles.query} onSubmit={handleQuerySubmit}>
           <label htmlFor={searchInputID}>Search: </label>
           <input
             id={searchInputID}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={handleQueryChange}
             size={10}
           />
-          <button type="submit">Search</button>
+          {!shouldSearch ? (
+            <button type="submit">Search</button>
+          ) : (
+            <button type="button" onClick={reset}>
+              Reset
+            </button>
+          )}
         </form>
-        {selectedResults && (
+        {(searchResults || selectedResults) && (
           <SearchResults
-            searchResults={searchResults ?? [] /* TODO: This default array does not work properly */}
-            selectedResults={selectedResults}
+            searchResults={searchResults ?? []}
+            selectedResults={selectedResults ?? []}
             setSelectedResults={handleSetSelectedResults}
           />
         )}

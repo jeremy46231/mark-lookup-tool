@@ -1,6 +1,6 @@
 'use server'
 
-import { Athlete, services, servicesMap } from '@/scraper/scraper'
+import { Athlete, servicesMap } from '@/scraper/scraper'
 
 function getPassedData(athlete: Athlete) {
   const data = {
@@ -28,19 +28,18 @@ export type passedData = ReturnType<typeof getPassedData>
 // }
 
 export async function searchSources(query: string) {
-  const results = 
-    await Promise.all(
-      [...servicesMap.values()].map(async (serviceInfo) => {
-        const service = new serviceInfo.constructor()
-        const searchResults = await service.search(query)
-        return {
-          serviceId: service.service,
-          searchResults,
-          displayName: serviceInfo.displayName,
-        }
-      })
-    )
-  
+  const results = await Promise.all(
+    [...servicesMap.values()].map(async (serviceInfo) => {
+      const service = new serviceInfo.constructor()
+      const searchResults = await service.search(query)
+      return {
+        serviceId: service.service,
+        searchResults,
+        displayName: serviceInfo.displayName,
+      }
+    })
+  )
+
   return results
 }
 export type searchResults = Awaited<ReturnType<typeof searchSources>>
@@ -60,4 +59,3 @@ export async function getAthletes(ids: [id: string, service: string][]) {
   const data = getPassedData(athlete)
   return data
 }
-
