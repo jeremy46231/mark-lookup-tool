@@ -212,14 +212,24 @@ function Result({
           <svg
             className={styles.resultLinkIcon}
             aria-label="result link"
-            viewBox="0 0 16 16"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              stroke="black"
+              stroke="#999"
               strokeWidth={1}
-              d="M5.333 7.997h5.334M10 5.33h1.333a2.667 2.667 0 1 1 0 5.333H10M6 5.33H4.667a2.667 2.667 0 0 0 0 5.333H6"
+              d="
+                M10,4.5 H4.5 v15 h15 V14
+                M13,4.5 h6.5 V11
+              "
+            />
+            <path
+              stroke="#aaa"
+              strokeWidth={1.25}
+              d="
+                M19.5,4.5 L10,14
+              "
             />
           </svg>
         </a>
