@@ -125,7 +125,7 @@ function ResultSet({
         selectResult={selectResult}
         deselectResult={deselectResult}
       />
-      <details>
+      <details className={styles.resultDetails}>
         <summary>Search results</summary>
         <ResultList
           results={searchOnlyResults}
@@ -152,7 +152,6 @@ function ResultList({
   selectResult: (result: searchResult) => void
   deselectResult: (result: searchResult) => void
 }) {
-  
   return (
     <ul className={styles.resultList}>
       {results.map((result) => (
@@ -192,39 +191,39 @@ function Result({
 
   return (
     <li key={result.id}>
-        <label>
-          <input
-            type="checkbox"
-            checked={checked}
-            onChange={handleCheckboxChange}
-          />
+      <label>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={handleCheckboxChange}
+        />
+        <div>
+          <div>{result.name}</div>
           <div>
-            <div>{result.name}</div>
-            <div>
-              {result.school && <>{result.school}, </>}
-              {result.city}, {result.state}
-            </div>
+            {result.school && <>{result.school}, </>}
+            {result.city}, {result.state}
           </div>
-          <a
-            className={styles.resultLink}
-            href={result.url}
-            target={`athlete-${serviceId}-${result.id}`}
+        </div>
+        <a
+          className={styles.resultLink}
+          href={result.url}
+          target={`athlete-${serviceId}-${result.id}`}
+        >
+          <svg
+            className={styles.resultLinkIcon}
+            aria-label="result link"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <svg
-              className={styles.resultLinkIcon}
-              aria-label="result link"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                stroke="black"
-                strokeWidth={1}
-                d="M5.333 7.997h5.334M10 5.33h1.333a2.667 2.667 0 1 1 0 5.333H10M6 5.33H4.667a2.667 2.667 0 0 0 0 5.333H6"
-              />
-            </svg>
-          </a>
-        </label>
-      </li>
+            <path
+              stroke="black"
+              strokeWidth={1}
+              d="M5.333 7.997h5.334M10 5.33h1.333a2.667 2.667 0 1 1 0 5.333H10M6 5.33H4.667a2.667 2.667 0 0 0 0 5.333H6"
+            />
+          </svg>
+        </a>
+      </label>
+    </li>
   )
 }

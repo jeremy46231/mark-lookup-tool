@@ -136,11 +136,13 @@ export function Scraper() {
             value={query}
             onChange={handleQueryChange}
             size={10}
-            autoComplete='name'
-            placeholder=' ' // Fix safari alignment bug - https://bugs.webkit.org/show_bug.cgi?id=142968
+            autoComplete="name"
+            placeholder=" " // Fix safari alignment bug - https://bugs.webkit.org/show_bug.cgi?id=142968
           />
           {!shouldSearch ? (
-            <button type="submit">Search</button>
+            <button type="submit" disabled={query.trim() === ''}>
+              Search
+            </button>
           ) : (
             <button type="button" onClick={reset}>
               Reset
