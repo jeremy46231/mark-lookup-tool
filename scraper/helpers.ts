@@ -13,7 +13,10 @@ export function parseTime(timeString: string) {
   const secondsPart = parts.pop() || '0'
   const minutesPart = parts.pop() || '0'
   const hoursPart = parts.pop() || '0'
-  const time = parseFloat(secondsPart) + parseFloat(minutesPart) * 60 + parseFloat(hoursPart) * 3600
+  const time =
+    parseFloat(secondsPart) +
+    parseFloat(minutesPart) * 60 +
+    parseFloat(hoursPart) * 3600
   if (isNaN(time)) {
     console.error(`Don't know how to parse this time: ${timeString}`)
     return null

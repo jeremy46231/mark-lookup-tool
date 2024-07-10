@@ -10,7 +10,7 @@ export default async function AthletePage({
 }) {
   const athleteData = athletes.get(athleteId)
   if (!athleteData) {
-    return <h1>Athlete "{athleteId}" not found</h1>
+    return <h1>Athlete &quot;{athleteId}&quot; not found</h1>
   }
   const data = await getAthlete(athleteData.ids)
 

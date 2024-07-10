@@ -7,6 +7,12 @@ import {
   MileSplitAPISearch,
 } from './apiTypes'
 
+// Get the original fetch function
+// Next.js' fetch has some kind of weird memory error that puts random RAM data in the response text???
+const fetch = (globalThis.fetch as any).__nextPatched
+  ? ((globalThis.fetch as any)._nextOriginalFetch as typeof globalThis.fetch)
+  : globalThis.fetch
+
 export class MileSplit extends Service {
   readonly service = 'MileSplit' as const
 
@@ -118,7 +124,6 @@ const mileSplitMetersMatchers: Matcher<number>[] = [
   ['Mile', 1609.344],
   ['Marathon', 42195],
   ['HalfMar', 21097.5],
-  
 ]
 
 export class MileSplitTime extends ServiceTime {

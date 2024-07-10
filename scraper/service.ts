@@ -24,9 +24,9 @@ export abstract class ServiceAthlete {
   loaded = false
   times: ServiceTime[] = []
 
- constructor(public id: string) {}
+  constructor(public id: string) {}
 
- async load() {}
+  async load() {}
 
   abstract get firstName(): string | null
   abstract get lastName(): string | null

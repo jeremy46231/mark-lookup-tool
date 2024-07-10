@@ -6,7 +6,12 @@ import {
   AthleticNetAPITFAthlete,
   AthleticNetAPIXCAthlete,
 } from './apiTypes'
-import { url } from 'inspector'
+
+// Get the original fetch function
+// Next.js' fetch has some kind of weird memory error that puts random RAM data in the response text???
+const fetch = (globalThis.fetch as any).__nextPatched
+  ? ((globalThis.fetch as any)._nextOriginalFetch as typeof globalThis.fetch)
+  : globalThis.fetch
 
 export class AthleticNet extends Service {
   readonly service = 'Athletic.net' as const

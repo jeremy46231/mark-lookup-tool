@@ -7,22 +7,25 @@ import { Service, ServiceAthlete, ServiceTime } from './service'
 export const services = [AthleticNet, MileSplit]
 
 export const servicesMap = new Map([
-  ['Athletic.net', {
-    constructor: AthleticNet as new () => Service,
-    displayName: 'Athletic.net',
-  }],
-  ['MileSplit', {
-    constructor: MileSplit as new () => Service,
-    displayName: 'MileSplit',
-  }],
+  [
+    'Athletic.net',
+    {
+      constructor: AthleticNet as new () => Service,
+      displayName: 'Athletic.net',
+    },
+  ],
+  [
+    'MileSplit',
+    {
+      constructor: MileSplit as new () => Service,
+      displayName: 'MileSplit',
+    },
+  ],
 ])
-
 
 export class Scraper {
   constructor(
-    public sources: Service[] = services.map(
-      (Service) => new Service()
-    )
+    public sources: Service[] = services.map((Service) => new Service())
   ) {}
 
   // async search(query: string) {
