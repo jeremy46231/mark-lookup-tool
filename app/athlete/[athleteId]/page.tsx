@@ -1,3 +1,4 @@
+import { DataView } from '@/app/components/DataView/DataView'
 import { getAthlete } from '@/app/components/Scraper/runScraper'
 import { athletes } from '@/data/data'
 
@@ -15,8 +16,15 @@ export default async function AthletePage({
   const data = await getAthlete(athleteData.ids)
 
   return (
-    <div>
-      <h1>Athlete {athleteId}</h1>
-    </div>
+    <main>
+      <div
+        style={{
+          margin: '0 auto',
+          maxWidth: '65rem',
+        }}
+      >
+        <DataView data={data} />
+      </div>
+    </main>
   )
 }
