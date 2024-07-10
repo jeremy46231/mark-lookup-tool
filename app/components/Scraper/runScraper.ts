@@ -44,7 +44,7 @@ export async function searchSources(query: string) {
 }
 export type searchResults = Awaited<ReturnType<typeof searchSources>>
 
-export async function getAthletes(ids: [id: string, service: string][]) {
+export async function getAthlete(ids: [id: string, service: string][]) {
   const sources = await Promise.all(
     ids.map(async ([id, serviceId]) => {
       const serviceInfo = servicesMap.get(serviceId)

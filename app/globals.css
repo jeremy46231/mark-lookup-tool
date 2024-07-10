@@ -1,3 +1,9 @@
+/* Set padding on <body>, but with the lowest specificity */
+:is(body) {
+  padding: 1rem;
+}
+
+
 /* Browsers don't use a pointer cursor on buttons by default, imo they should */
 button,
 input[type='button'],

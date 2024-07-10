@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useState } from 'react'
 import styles from './Scraper.module.css'
 import {
-  getAthletes,
+  getAthlete,
   searchSources,
   type passedData,
   type searchResults,
@@ -115,7 +115,7 @@ export function Scraper() {
           (result) => [result.id, serviceId] as [id: string, service: string]
         )
       )
-      const athlete = await getAthletes(ids)
+      const athlete = await getAthlete(ids)
       if (controller.signal.aborted) return
       setData(athlete)
     })()
