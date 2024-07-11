@@ -124,6 +124,13 @@ export function Scraper() {
   }, [selectedResults, waitForInputDebounce])
 
   // Render
+  console.log(JSON.stringify([
+    (data?.name ?? '').toLowerCase().replaceAll(' ', ''),
+    {
+      name: data?.name,
+      ids: selectedResults?.flatMap((result) => result.results.map((r) => [r.id, result.serviceId])),
+    }
+  ]) + ',')
 
   return (
     <div className={styles.scraper}>

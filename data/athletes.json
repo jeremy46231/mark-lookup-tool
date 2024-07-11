@@ -1,12 +1,16 @@
 [
-  [
-    "jeremywoolley",
-    {
-      "name": "Jeremy Woolley",
-      "ids": [
-        ["23553041", "Athletic.net"],
-        ["13651993", "MileSplit"]
-      ]
-    }
-  ]
+  ["alliesepulveda",{"name":"Allie Sepulveda","ids":[["23704552","Athletic.net"],["13908892","MileSplit"]]}],
+  ["ashlynennis",{"name":"Ashlyn Ennis","ids":[["21181859","Athletic.net"],["12162051","MileSplit"]]}],
+  ["claireangles",{"name":"Claire Angles","ids":[["21740110","Athletic.net"],["12162053","MileSplit"]]}],
+  ["darrylleogo",{"name":"Darryl Leogo","ids":[["21181855","Athletic.net"],["12250245","MileSplit"]]}],
+  ["jayfowkes",{"name":"Jay Fowkes","ids":[["25923084","Athletic.net"],["15006287","MileSplit"]]}],
+  ["jeremygrande",{"name":"Jeremy Grande","ids":[["21181856","Athletic.net"],["12162054","MileSplit"]]}],
+  ["jeremywoolley",{"name":"Jeremy Woolley","ids":[["23553041","Athletic.net"],["13651993","MileSplit"]]}],
+  ["victornardiello",{"name":"Victor Nardiello","ids":[["13651992","MileSplit"],["23553040","Athletic.net"]]}],
+  ["madisonlamb",{"name":"Madison Lamb","ids":[["18038714","Athletic.net"],["13651995","MileSplit"]]}],
+  ["nataliezenkner",{"name":"Natalie Zenkner","ids":[["23553045","Athletic.net"],["13651994","MileSplit"]]}],
+  ["pedroangelcastaneda",{"name":"Pedroangel Castaneda","ids":[["23591205","Athletic.net"]]}],
+  ["ramonespinoza",{"name":"Ramon Espinoza","ids":[["18779142","Athletic.net"],["10971965","MileSplit"]]}],
+  ["romayacrawford",{"name":"Romaya Crawford","ids":[["23553042","Athletic.net"],["13651996","MileSplit"]]}],
+  ["zoehofman",{"name":"Zoe Hofman","ids":[["23553044","Athletic.net"],["13651991","MileSplit"]]}]
 ]

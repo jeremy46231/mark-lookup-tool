@@ -1,3 +1,5 @@
+'use server'
+
 import { DataView } from '@/app/components/DataView/DataView'
 import { getAthlete } from '@/app/components/Scraper/runScraper'
 import { athletes } from '@/data/data'
@@ -14,6 +16,8 @@ export default async function AthletePage({
     return <h1>Athlete &quot;{athleteId}&quot; not found</h1>
   }
   const data = await getAthlete(athleteData.ids)
+
+  console.log(data)
 
   return (
     <main>
