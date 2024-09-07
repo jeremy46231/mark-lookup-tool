@@ -5,9 +5,9 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Mark Lookup Tool',
+  title: 'Running Times Tool',
   description:
-    "Website to look up any runner's cross country and track & field times in a nice interface",
+    "Easily look up any runner's cross country and track & field times",
 }
 
 export default function RootLayout({
